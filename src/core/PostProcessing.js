@@ -21,10 +21,10 @@ import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader.js";
 import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
-import { SSRPass } from "./postprocessing/SSRPass.js";
-import { SSAOPass } from "./postprocessing/SSAOPass.js";
-import { BloomPass } from "./postprocessing/BloomPass.js";
-import { ToneMappingPass } from "./postprocessing/ToneMappingPass.js";
+import { SSRPass } from "../postprocessing/SSRPass.js";
+import { SSAOPass } from "../postprocessing/SSAOPass.js";
+import { BloomPass } from "../postprocessing/BloomPass.js";
+import { ToneMappingPass } from "../postprocessing/ToneMappingPass.js";
 
 /**
  * PostProcessing configuration options
