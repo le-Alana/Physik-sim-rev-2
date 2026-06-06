@@ -412,6 +412,9 @@ export class Mountains {
     const position = geometry.attributes.position;
     const prng = this._createPRNG(this.options.seed + index * 100);
 
+    // Guard against zero or near-zero height
+    const height = Math.max(data.height, 1);
+
     for (let i = 0; i < position.count; i++) {
       const x = position.getX(i);
       const y = position.getY(i);
@@ -419,15 +422,20 @@ export class Mountains {
 
       // Calculate distance from center axis
       const dist = Math.sqrt(x * x + z * z);
-      const maxRadius = data.baseRadius * (1 - y / data.height);
-      const normalizedDist = maxRadius > 0 ? dist / maxRadius : 0;
 
-      // Height-based profile
-      let profile = 1.0 - Math.pow(y / data.height, data.steepness);
+      // Guard against division by zero: when y >= height, maxRadius is 0 (apex)
+      const heightRatio = Math.min(y / height, 1.0);
+      const maxRadius = data.baseRadius * (1 - heightRatio);
+
+      // Guard against infinity: if maxRadius is 0, normalizedDist is 0
+      const normalizedDist = maxRadius > 0.001 ? Math.min(dist / maxRadius, 1.0) : 0;
+
+      // Height-based profile (clamp height ratio to avoid NaN from pow with negative base)
+      let profile = 1.0 - Math.pow(Math.max(0, heightRatio), data.steepness);
 
       // Peak sharpening
-      if (y / data.height > 0.8) {
-        profile *= 1.0 + data.peakSharpness * (y / data.height - 0.8) * 5;
+      if (heightRatio > 0.8) {
+        profile *= 1.0 + data.peakSharpness * (heightRatio - 0.8) * 5;
       }
 
       // Add noise for natural variation
@@ -436,20 +444,27 @@ export class Mountains {
         this._noise3D(x * noiseScale, y * noiseScale, z * noiseScale, prng) *
         0.1;
 
-      // Apply displacement
+      // Apply displacement (guard against NaN from Infinity * 0)
       const displacement = profile * (1 + noise);
-      const newDist = normalizedDist * displacement * maxRadius;
+      const newDist = Math.min(normalizedDist * displacement * maxRadius, data.baseRadius * 2);
 
-      if (dist > 0.001) {
+      if (dist > 0.001 && maxRadius > 0.001) {
         const factor = newDist / dist;
-        position.setX(i, x * factor);
-        position.setZ(i, z * factor);
+        const newX = x * factor;
+        const newZ = z * factor;
+        position.setX(i, isFinite(newX) ? newX : 0);
+        position.setZ(i, isFinite(newZ) ? newZ : 0);
+      } else if (dist <= 0.001) {
+        // Apex vertex - keep at center
+        position.setX(i, 0);
+        position.setZ(i, 0);
       }
 
-      // Vertical displacement for ridges
-      const ridgeNoise =
-        this._noise2D(x * 0.05, z * 0.05, prng) * 0.05 * data.height;
-      position.setY(i, y + ridgeNoise * (1 - y / data.height));
+      // Vertical displacement for ridges (guard against NaN)
+      const ridgeNoise = this._noise2D(x * 0.05, z * 0.05, prng) * 0.05 * height;
+      const yDisplacement = ridgeNoise * (1 - heightRatio);
+      const newY = y + (isFinite(yDisplacement) ? yDisplacement : 0);
+      position.setY(i, isFinite(newY) ? newY : y);
     }
 
     position.needsUpdate = true;
@@ -465,39 +480,63 @@ export class Mountains {
 
     const position = mesh.geometry.attributes.position;
     const time = elapsedTime;
+    const height = Math.max(data.height, 1);
 
     // Very subtle wind sway on vertices
     const windSpeed = 0.3;
     const windStrength = this._animationState.windStrength;
 
+    // Store original positions if not already stored
+    if (!mesh.userData.originalPositions) {
+      mesh.userData.originalPositions = new Float32Array(position.array);
+    }
+
+    const origPositions = mesh.userData.originalPositions;
+
     // Only animate top portion
     for (let i = 0; i < position.count; i++) {
-      const y = position.getY(i);
-      const heightRatio = y / data.height; // But we need original height...
+      // Get original (pre-wind) position from stored base
+      const origX = origPositions[i * 3];
+      const origY = origPositions[i * 3 + 1];
+      const origZ = origPositions[i * 3 + 2];
 
-      // Use vertex Y relative to mesh position
-      const localY = y - mesh.position.y;
-      if (localY > data.height * 0.6) {
-        const factor = (localY - data.height * 0.6) / (data.height * 0.4);
+      const localY = origY; // Use original Y to compute height ratio
+      const heightRatio = localY / height;
+
+      if (heightRatio > 0.6) {
+        const factor = (heightRatio - 0.6) / 0.4;
         const sway =
           Math.sin(
-            time * windSpeed + position.getX(i) * 0.1 + position.getZ(i) * 0.1,
+            time * windSpeed + origX * 0.1 + origZ * 0.1,
           ) *
           windStrength *
           factor;
-        position.setX(
-          i,
-          position.getX(i) + sway * this._animationState.windDirection.x,
-        );
-        position.setZ(
-          i,
-          position.getZ(i) + sway * this._animationState.windDirection.y,
-        );
+
+        const newX = origX + sway * this._animationState.windDirection.x;
+        const newZ = origZ + sway * this._animationState.windDirection.y;
+
+        position.setX(i, isFinite(newX) ? newX : origX);
+        position.setY(i, origY);
+        position.setZ(i, isFinite(newZ) ? newZ : origZ);
       }
     }
 
     position.needsUpdate = true;
     mesh.geometry.computeVertexNormals();
+  }
+
+  /**
+   * Update all mountain animations (wind sway)
+   * @param {number} deltaTime - Frame delta time
+   * @param {number} elapsedTime - Total elapsed time
+   */
+  update(deltaTime, elapsedTime) {
+    this._animationState.time = elapsedTime;
+    this.mountains.forEach((mesh) => {
+      if (mesh.userData && mesh.userData.update) {
+        mesh.userData.update(deltaTime, elapsedTime);
+      }
+    });
   }
 
   /**
