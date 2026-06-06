@@ -1,0 +1,46 @@
+{
+  "headers": [
+    {
+      "source" : "**/*.@(js|mjs)",
+      "headers" : [{
+        "key" : "Content-Type",
+        "value" : "application/javascript; charset=utf-8"
+      }]
+    },
+    {
+      "source" : "**/*.@(glsl)",
+      "headers" : [{
+        "key" : "Content-Type",
+        "value" : "text/plain; charset=utf-8"
+      }]
+    },
+    {
+      "source" : "**/*.@(html)",
+      "headers" : [{
+        "key" : "Content-Type",
+        "value" : "text/html; charset=utf-8"
+      }]
+    },
+    {
+      "source" : "**/*.@(css)",
+      "headers" : [{
+        "key" : "Content-Type",
+        "value" : "text/css; charset=utf-8"
+      }]
+    },
+    {
+      "source" : "**/*.@(json)",
+      "headers" : [{
+        "key" : "Content-Type",
+        "value" : "application/json; charset=utf-8"
+      }]
+    },
+    {
+      "source" : "**/*",
+      "headers" : [{
+        "key" : "Cache-Control",
+        "value" : "max-age=0, must-revalidate"
+      }]
+    }
+  ]
+}
