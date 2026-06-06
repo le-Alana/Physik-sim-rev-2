@@ -1,18 +1,18 @@
 /**
  * Lighting - Dynamic Lighting System
- * 
+ *
  * Provides a complete lighting setup with:
  * - Cascaded Shadow Maps (CSM) for directional light
  * - Dynamic time-of-day transitions
  * - Ambient/hemisphere lighting
  * - Volumetric light scattering
  * - Light probes for GI approximation
- * 
+ *
  * @module scene/Lighting
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
 /**
  * Lighting configuration options
@@ -32,14 +32,14 @@ export class Lighting {
    */
   constructor(options = {}) {
     this.options = {
-      quality: 'high',
+      quality: "high",
       enableShadows: true,
       timeOfDay: 0.3,
       sunIntensity: 1.5,
       ambientIntensity: 0.3,
       cascadeCount: 4,
       maxShadowDistance: 300,
-      ...options
+      ...options,
     };
 
     /** @type {THREE.DirectionalLight} */
@@ -50,7 +50,7 @@ export class Lighting {
     this.ambientLight = null;
     /** @type {THREE.Group} */
     this.root = new THREE.Group();
-    this.root.name = 'Lighting';
+    this.root.name = "Lighting";
 
     /** @type {THREE.Light[]} */
     this.lights = [];
@@ -59,7 +59,7 @@ export class Lighting {
     this._animationState = {
       time: 0,
       dayCycle: 0,
-      sunAngle: 0
+      sunAngle: 0,
     };
 
     /** @type {THREE.CSM} */
@@ -73,13 +73,13 @@ export class Lighting {
    * @returns {Promise<void>}
    */
   async build() {
-    console.log('[Lighting] Building dynamic lighting system...');
+    console.log("[Lighting] Building dynamic lighting system...");
 
     this._createSunLight();
     this._createHemisphereLight();
     this._createAmbientLight();
     this._createFillLights();
-    
+
     if (this.options.enableShadows) {
       this._setupCascadedShadows();
     }
@@ -89,7 +89,7 @@ export class Lighting {
     // Set initial time of day
     this.setTimeOfDay(this.options.timeOfDay);
 
-    console.log('[Lighting] Lighting system built successfully');
+    console.log("[Lighting] Lighting system built successfully");
   }
 
   /**
@@ -97,20 +97,23 @@ export class Lighting {
    * @private
    */
   _createSunLight() {
-    this.sunLight = new THREE.DirectionalLight(0xfff5e6, this.options.sunIntensity);
-    this.sunLight.name = 'SunLight';
+    this.sunLight = new THREE.DirectionalLight(
+      0xfff5e6,
+      this.options.sunIntensity,
+    );
+    this.sunLight.name = "SunLight";
     this.sunLight.castShadow = this.options.enableShadows;
-    
+
     // Shadow camera will be managed by CSM
     this.sunLight.shadow.bias = -0.0001;
     this.sunLight.shadow.normalBias = 0.02;
     this.sunLight.shadow.radius = 4;
     this.sunLight.shadow.blurSamples = 8;
-    
+
     // High quality shadows
-    if (this.options.quality === 'ultra' || this.options.quality === 'high') {
+    if (this.options.quality === "ultra" || this.options.quality === "high") {
       this.sunLight.shadow.mapSize.set(2048, 2048);
-    } else if (this.options.quality === 'medium') {
+    } else if (this.options.quality === "medium") {
       this.sunLight.shadow.mapSize.set(1024, 1024);
     } else {
       this.sunLight.shadow.mapSize.set(512, 512);
@@ -128,9 +131,9 @@ export class Lighting {
     this.hemiLight = new THREE.HemisphereLight(
       0x87ceeb, // Sky color
       0x3d3d2e, // Ground color
-      this.options.ambientIntensity
+      this.options.ambientIntensity,
     );
-    this.hemiLight.name = 'HemisphereLight';
+    this.hemiLight.name = "HemisphereLight";
     this.hemiLight.position.set(0, 100, 0);
 
     this.root.add(this.hemiLight);
@@ -142,8 +145,11 @@ export class Lighting {
    * @private
    */
   _createAmbientLight() {
-    this.ambientLight = new THREE.AmbientLight(0x404060, this.options.ambientIntensity * 0.5);
-    this.ambientLight.name = 'AmbientLight';
+    this.ambientLight = new THREE.AmbientLight(
+      0x404060,
+      this.options.ambientIntensity * 0.5,
+    );
+    this.ambientLight.name = "AmbientLight";
 
     this.root.add(this.ambientLight);
     this.lights.push(this.ambientLight);
@@ -156,7 +162,7 @@ export class Lighting {
   _createFillLights() {
     // Rim light from opposite side of sun
     const rimLight = new THREE.DirectionalLight(0xffeedd, 0.3);
-    rimLight.name = 'RimLight';
+    rimLight.name = "RimLight";
     rimLight.position.set(0, 50, 0);
     rimLight.target.position.set(0, 0, 0);
     this.root.add(rimLight);
@@ -165,7 +171,7 @@ export class Lighting {
 
     // Subtle fill light
     const fillLight = new THREE.DirectionalLight(0xffffee, 0.15);
-    fillLight.name = 'FillLight';
+    fillLight.name = "FillLight";
     fillLight.position.set(-100, 100, -100);
     fillLight.target.position.set(0, 0, 0);
     this.root.add(fillLight);
@@ -180,12 +186,15 @@ export class Lighting {
   _setupCascadedShadows() {
     // Note: Three.js r184 has experimental CSM support
     // We'll implement a custom CSM-like approach
-    
+
     this.sunLight.shadow.camera.near = 1;
     this.sunLight.shadow.camera.far = this.options.maxShadowDistance;
-    
+
     // Will be updated per frame based on camera
-    this._updateShadowCamera(new THREE.Vector3(0, 50, 50), new THREE.Vector3(0, 0, 0));
+    this._updateShadowCamera(
+      new THREE.Vector3(0, 50, 50),
+      new THREE.Vector3(0, 0, 0),
+    );
   }
 
   /**
@@ -199,15 +208,15 @@ export class Lighting {
 
     const shadowCam = this.sunLight.shadow.camera;
     const sunDir = new THREE.Vector3().copy(this.sunLight.position).normalize();
-    
+
     // Calculate frustum splits for cascades
     const cascades = this._calculateCascadeSplits(cameraPos, cameraTarget);
-    
+
     // For now, use single cascade covering main view area
     // In a full implementation, this would use multiple shadow maps
     const center = new THREE.Vector3().copy(cameraTarget);
     center.addScaledVector(sunDir, -50);
-    
+
     const size = 100;
     shadowCam.left = -size;
     shadowCam.right = size;
@@ -269,11 +278,15 @@ export class Lighting {
     if (this.sunLight) {
       this.sunLight.position.set(sunHorizontal, Math.max(10, sunHeight), 0);
       this.sunLight.target.position.set(0, 0, 0);
-      
+
       // Intensity based on sun height
       const heightFactor = Math.max(0, Math.sin(angle));
       this.sunLight.intensity = this.options.sunIntensity * heightFactor;
-      this.sunLight.color.setHSL(0.1, 0.5, THREE.MathUtils.lerp(0.5, 1.0, heightFactor));
+      this.sunLight.color.setHSL(
+        0.1,
+        0.5,
+        THREE.MathUtils.lerp(0.5, 1.0, heightFactor),
+      );
     }
 
     // Update hemisphere light
@@ -281,13 +294,24 @@ export class Lighting {
       const skyIntensity = THREE.MathUtils.lerp(0.2, 1.0, heightFactor);
       const groundIntensity = THREE.MathUtils.lerp(0.5, 0.2, heightFactor);
       this.hemiLight.intensity = this.options.ambientIntensity * skyIntensity;
-      this.hemiLight.color.setHSL(0.6, 0.5, THREE.MathUtils.lerp(0.4, 0.7, skyIntensity));
-      this.hemiLight.groundColor.setHSL(0.1, 0.3, THREE.MathUtils.lerp(0.2, 0.4, groundIntensity));
+      this.hemiLight.color.setHSL(
+        0.6,
+        0.5,
+        THREE.MathUtils.lerp(0.4, 0.7, skyIntensity),
+      );
+      this.hemiLight.groundColor.setHSL(
+        0.1,
+        0.3,
+        THREE.MathUtils.lerp(0.2, 0.4, groundIntensity),
+      );
     }
 
     // Update ambient
     if (this.ambientLight) {
-      this.ambientLight.intensity = this.options.ambientIntensity * 0.5 * THREE.MathUtils.lerp(0.3, 1.0, heightFactor);
+      this.ambientLight.intensity =
+        this.options.ambientIntensity *
+        0.5 *
+        THREE.MathUtils.lerp(0.3, 1.0, heightFactor);
     }
   }
 
@@ -298,7 +322,7 @@ export class Lighting {
    */
   update(deltaTime, elapsedTime) {
     this._animationState.time = elapsedTime;
-    
+
     // Update shadow camera if needed
     // This would be called with current camera position in a full implementation
   }
@@ -316,7 +340,7 @@ export class Lighting {
 
   /**
    * Set sun intensity
-   * @param {number} intensity 
+   * @param {number} intensity
    */
   setSunIntensity(intensity) {
     this.options.sunIntensity = intensity;
@@ -328,7 +352,7 @@ export class Lighting {
 
   /**
    * Set ambient intensity
-   * @param {number} intensity 
+   * @param {number} intensity
    */
   setAmbientIntensity(intensity) {
     this.options.ambientIntensity = intensity;
@@ -338,7 +362,7 @@ export class Lighting {
 
   /**
    * Enable/disable shadows
-   * @param {boolean} enabled 
+   * @param {boolean} enabled
    */
   setShadowsEnabled(enabled) {
     this.options.enableShadows = enabled;
@@ -351,7 +375,7 @@ export class Lighting {
    */
   setQuality(quality) {
     this.options.quality = quality;
-    
+
     if (this.sunLight) {
       const sizes = { low: 512, medium: 1024, high: 2048, ultra: 4096 };
       const size = sizes[quality] || 2048;
@@ -365,7 +389,10 @@ export class Lighting {
    */
   getSunDirection() {
     if (this.sunLight) {
-      return new THREE.Vector3().copy(this.sunLight.position).normalize().negate();
+      return new THREE.Vector3()
+        .copy(this.sunLight.position)
+        .normalize()
+        .negate();
     }
     return new THREE.Vector3(0, -1, 0);
   }
@@ -375,14 +402,16 @@ export class Lighting {
    * @returns {THREE.Color}
    */
   getSunColor() {
-    return this.sunLight ? this.sunLight.color.clone() : new THREE.Color(0xfff5e6);
+    return this.sunLight
+      ? this.sunLight.color.clone()
+      : new THREE.Color(0xfff5e6);
   }
 
   /**
    * Dispose of resources
    */
   dispose() {
-    this.lights.forEach(light => {
+    this.lights.forEach((light) => {
       if (light.shadow?.map) light.shadow.map.dispose();
       if (light.shadow?.mapPass) light.shadow.mapPass.dispose();
     });

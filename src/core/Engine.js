@@ -1,16 +1,16 @@
 /**
  * Engine - Core WebGPU/WebGL Renderer Management
- * 
+ *
  * Handles renderer initialization, WebGPU detection and fallback,
  * render target management, and renderer configuration.
- * 
+ *
  * @module core/Engine
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
-import { WebGPURenderer } from 'three/webgpu';
-import { WebGLRenderer } from 'three/webgl';
+import * as THREE from "three";
+import { WebGPURenderer } from "three/webgpu";
+import { WebGLRenderer } from "three/webgl";
 
 /**
  * Engine configuration options
@@ -35,10 +35,10 @@ export class Engine {
       preferWebGPU: true,
       antialias: true,
       alpha: false,
-      powerPreference: 'high-performance',
+      powerPreference: "high-performance",
       preserveDrawingBuffer: false,
       logarithmicDepthBuffer: true,
-      ...options
+      ...options,
     };
 
     /** @type {WebGPURenderer|WebGLRenderer|null} */
@@ -57,26 +57,29 @@ export class Engine {
    */
   async init() {
     if (this.isInitialized) {
-      console.warn('[Engine] Already initialized');
+      console.warn("[Engine] Already initialized");
       return;
     }
 
     // Try WebGPU first if preferred
-    if (this.options.preferWebGPU && await this._checkWebGPUSupport()) {
+    if (this.options.preferWebGPU && (await this._checkWebGPUSupport())) {
       try {
         this.renderer = new WebGPURenderer({
           antialias: this.options.antialias,
           alpha: this.options.alpha,
           powerPreference: this.options.powerPreference,
           preserveDrawingBuffer: this.options.preserveDrawingBuffer,
-          logarithmicDepthBuffer: this.options.logarithmicDepthBuffer
+          logarithmicDepthBuffer: this.options.logarithmicDepthBuffer,
         });
 
         await this.renderer.init();
         this.isWebGPU = true;
-        console.log('[Engine] WebGPU renderer initialized');
+        console.log("[Engine] WebGPU renderer initialized");
       } catch (error) {
-        console.warn('[Engine] WebGPU initialization failed, falling back to WebGL2:', error.message);
+        console.warn(
+          "[Engine] WebGPU initialization failed, falling back to WebGL2:",
+          error.message,
+        );
         this._initWebGL2();
       }
     } else {
@@ -99,11 +102,11 @@ export class Engine {
 
     try {
       const adapter = await navigator.gpu.requestAdapter({
-        powerPreference: this.options.powerPreference
+        powerPreference: this.options.powerPreference,
       });
       return !!adapter;
     } catch (error) {
-      console.warn('[Engine] WebGPU adapter request failed:', error.message);
+      console.warn("[Engine] WebGPU adapter request failed:", error.message);
       return false;
     }
   }
@@ -120,16 +123,16 @@ export class Engine {
       preserveDrawingBuffer: this.options.preserveDrawingBuffer,
       depth: true,
       stencil: false,
-      failIfMajorPerformanceCaveat: false
+      failIfMajorPerformanceCaveat: false,
     };
 
     this.renderer = new WebGLRenderer({
       ...this.contextAttributes,
-      logarithmicDepthBuffer: this.options.logarithmicDepthBuffer
+      logarithmicDepthBuffer: this.options.logarithmicDepthBuffer,
     });
 
     this.isWebGPU = false;
-    console.log('[Engine] WebGL2 renderer initialized');
+    console.log("[Engine] WebGL2 renderer initialized");
   }
 
   /**
@@ -205,10 +208,13 @@ export class Engine {
       magFilter: THREE.LinearFilter,
       wrapS: THREE.ClampToEdgeWrapping,
       wrapT: THREE.ClampToEdgeWrapping,
-      generateMipmaps: false
+      generateMipmaps: false,
     };
 
-    return new THREE.RenderTarget(width, height, { ...defaultOptions, ...options });
+    return new THREE.RenderTarget(width, height, {
+      ...defaultOptions,
+      ...options,
+    });
   }
 
   /**
@@ -219,7 +225,7 @@ export class Engine {
       this.renderer.dispose();
       this.renderer = null;
       this.isInitialized = false;
-      console.log('[Engine] Renderer disposed');
+      console.log("[Engine] Renderer disposed");
     }
   }
 
@@ -236,10 +242,12 @@ export class Engine {
       maxTextureSize: this.renderer.capabilities?.maxTextureSize || 0,
       maxAnisotropy: this.renderer.capabilities?.maxAnisotropy || 0,
       vertexTextures: this.renderer.capabilities?.vertexTextures || false,
-      floatVertexTextures: this.renderer.capabilities?.floatVertexTextures || false,
-      floatFragmentTextures: this.renderer.capabilities?.floatFragmentTextures || false,
+      floatVertexTextures:
+        this.renderer.capabilities?.floatVertexTextures || false,
+      floatFragmentTextures:
+        this.renderer.capabilities?.floatFragmentTextures || false,
       drawBuffers: this.renderer.capabilities?.drawBuffers || 0,
-      info: this.renderer.info
+      info: this.renderer.info,
     };
   }
 }

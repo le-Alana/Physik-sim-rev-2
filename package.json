@@ -4,9 +4,9 @@
   "description": "Ultra-realistic WebGPU 3D rendering engine with Three.js r184 - Rayman-style test scene with volumetric clouds, PBR materials with wear, screen-space reflections, and full post-processing pipeline",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "npx serve . -l 5173",
+    "build": "echo 'No build step required - uses native ES modules'",
+    "preview": "npx serve . -l 5173",
     "lint": "eslint src --ext .js",
     "format": "prettier --write \"src/**/*.js\""
   },
@@ -26,9 +26,9 @@
     "three": "0.184.0"
   },
   "devDependencies": {
-    "vite": "8.0.16",
     "eslint": "10.4.1",
-    "prettier": "3.8.1"
+    "prettier": "3.8.1",
+    "serve": "^14.2.6"
   },
   "engines": {
     "node": ">=24.15.0"

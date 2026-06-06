@@ -1,18 +1,18 @@
 /**
  * CloudMaterial - Volumetric Cloud Material
- * 
+ *
  * Advanced volumetric cloud rendering with:
  * - Ray-marching through 3D noise
  * - Multiple scattering (silver lining, god rays)
  * - Dynamic weather transitions
  * - Performance LOD based on distance
  * - Temporal reprojection for noise reduction
- * 
+ *
  * @module materials/CloudMaterial
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
 /**
  * CloudMaterial configuration options
@@ -43,7 +43,7 @@ export class CloudMaterial extends THREE.ShaderMaterial {
       noiseTexture: { value: options.noiseTexture || null },
       weatherTexture: { value: options.weatherTexture || null },
       blueNoise: { value: options.blueNoise || null },
-      
+
       // Cloud parameters
       density: { value: options.density ?? 1.0 },
       absorption: { value: options.absorption ?? 0.5 },
@@ -52,25 +52,25 @@ export class CloudMaterial extends THREE.ShaderMaterial {
       maxDistance: { value: options.maxDistance ?? 10000 },
       cloudBase: { value: options.cloudBase ?? 6000 },
       cloudTop: { value: options.cloudTop ?? 12000 },
-      
+
       // Detail parameters
       detailScale: { value: options.detailScale ?? 1.0 },
       erosionScale: { value: options.erosionScale ?? 0.5 },
       curlScale: { value: options.curlScale ?? 0.1 },
-      
+
       // Animation
       time: { value: 0 },
       windSpeed: { value: 5.0 },
       windDirection: { value: new THREE.Vector2(1, 0.2).normalize() },
       weatherTime: { value: 0 },
-      
+
       // Lighting
       sunPosition: { value: new THREE.Vector3(100, 80, 50) },
       sunColor: { value: new THREE.Color(1.0, 0.9, 0.7) },
       sunIntensity: { value: 1.0 },
       ambientColor: { value: new THREE.Color(0.3, 0.4, 0.6) },
       ambientIntensity: { value: 0.3 },
-      
+
       // Camera
       cameraPos: { value: new THREE.Vector3() },
       cameraDir: { value: new THREE.Vector3() },
@@ -78,19 +78,19 @@ export class CloudMaterial extends THREE.ShaderMaterial {
       projectionMatrix: { value: new THREE.Matrix4() },
       inverseProjectionMatrix: { value: new THREE.Matrix4() },
       inverseViewMatrix: { value: new THREE.Matrix4() },
-      
+
       // Quality
       stepScale: { value: 1.0 },
       jitter: { value: 0.5 },
       temporalEnabled: { value: 1.0 },
       historyTexture: { value: null },
-      
+
       // Weather
       weatherState: { value: 0 }, // 0=clear, 1=cloudy, 2=storm
       precipitation: { value: 0 },
-      
+
       // Resolution
-      resolution: { value: new THREE.Vector2(1920, 1080) }
+      resolution: { value: new THREE.Vector2(1920, 1080) },
     };
 
     super({
@@ -100,15 +100,15 @@ export class CloudMaterial extends THREE.ShaderMaterial {
       side: THREE.BackSide,
       transparent: true,
       depthWrite: false,
-      blending: THREE.NormalBlending
+      blending: THREE.NormalBlending,
     });
 
-    this.name = 'CloudMaterial';
-    
+    this.name = "CloudMaterial";
+
     /** @type {Object} */
     this._animationState = {
       time: 0,
-      windPhase: 0
+      windPhase: 0,
     };
   }
 
@@ -121,21 +121,21 @@ export class CloudMaterial extends THREE.ShaderMaterial {
    */
   update(deltaTime, elapsedTime, cameraPos, sunPos) {
     this._animationState.time = elapsedTime;
-    this._animationState.windPhase += deltaTime * this.uniforms.windSpeed.value * 0.001;
+    this._animationState.windPhase +=
+      deltaTime * this.uniforms.windSpeed.value * 0.001;
 
     this.uniforms.time.value = elapsedTime;
     this.uniforms.cameraPos.value.copy(cameraPos);
-    
+
     if (sunPos) {
       this.uniforms.sunPosition.value.copy(sunPos);
     }
 
     // Animate wind
     const windPhase = this._animationState.windPhase;
-    this.uniforms.windDirection.value.set(
-      Math.cos(windPhase * 0.3),
-      Math.sin(windPhase * 0.2)
-    ).normalize();
+    this.uniforms.windDirection.value
+      .set(Math.cos(windPhase * 0.3), Math.sin(windPhase * 0.2))
+      .normalize();
   }
 
   /**
@@ -146,14 +146,14 @@ export class CloudMaterial extends THREE.ShaderMaterial {
   setWeather(state, transitionTime = 5.0) {
     // Smooth transition would be handled in update loop
     this.uniforms.weatherState.value = state;
-    
+
     // Adjust parameters based on weather
     const weatherSettings = {
-      0: { density: 0.1, absorption: 0.1, precipitation: 0 },    // Clear
-      1: { density: 1.0, absorption: 0.5, precipitation: 0.2 },   // Cloudy
-      2: { density: 2.0, absorption: 0.8, precipitation: 0.8 }    // Storm
+      0: { density: 0.1, absorption: 0.1, precipitation: 0 }, // Clear
+      1: { density: 1.0, absorption: 0.5, precipitation: 0.2 }, // Cloudy
+      2: { density: 2.0, absorption: 0.8, precipitation: 0.8 }, // Storm
     };
-    
+
     const settings = weatherSettings[state] || weatherSettings[1];
     this.uniforms.density.value = settings.density;
     this.uniforms.absorption.value = settings.absorption;
@@ -169,9 +169,9 @@ export class CloudMaterial extends THREE.ShaderMaterial {
       low: { samples: 16, stepScale: 2.0 },
       medium: { samples: 32, stepScale: 1.5 },
       high: { samples: 64, stepScale: 1.0 },
-      ultra: { samples: 96, stepScale: 0.75 }
+      ultra: { samples: 96, stepScale: 0.75 },
     };
-    
+
     const settings = qualitySettings[quality] || qualitySettings.high;
     this.uniforms.samples.value = settings.samples;
     this.uniforms.stepScale.value = settings.stepScale;
@@ -179,8 +179,8 @@ export class CloudMaterial extends THREE.ShaderMaterial {
 
   /**
    * Set resolution for blue noise / temporal AA
-   * @param {number} width 
-   * @param {number} height 
+   * @param {number} width
+   * @param {number} height
    */
   setResolution(width, height) {
     this.uniforms.resolution.value.set(width, height);
@@ -188,7 +188,7 @@ export class CloudMaterial extends THREE.ShaderMaterial {
 
   /**
    * Set history texture for temporal reprojection
-   * @param {THREE.Texture} texture 
+   * @param {THREE.Texture} texture
    */
   setHistoryTexture(texture) {
     this.uniforms.historyTexture.value = texture;
@@ -196,7 +196,7 @@ export class CloudMaterial extends THREE.ShaderMaterial {
 
   /**
    * Enable/disable temporal reprojection
-   * @param {boolean} enabled 
+   * @param {boolean} enabled
    */
   setTemporalEnabled(enabled) {
     this.uniforms.temporalEnabled.value = enabled ? 1.0 : 0.0;
@@ -204,9 +204,9 @@ export class CloudMaterial extends THREE.ShaderMaterial {
 
   /**
    * Update sun parameters
-   * @param {THREE.Vector3} position 
-   * @param {THREE.Color} color 
-   * @param {number} intensity 
+   * @param {THREE.Vector3} position
+   * @param {THREE.Color} color
+   * @param {number} intensity
    */
   setSun(position, color, intensity) {
     this.uniforms.sunPosition.value.copy(position);

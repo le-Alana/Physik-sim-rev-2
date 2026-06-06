@@ -1,20 +1,20 @@
 /**
  * Mountains - Rayman-Style Procedural Mountains
- * 
+ *
  * Creates stylized mountains with:
  * - Procedural heightmap-based geometry
  * - Tri-planar texturing for seamless surfaces
  * - Snow caps at higher elevations
  * - Vegetation zones
  * - Instanced rendering for performance
- * 
+ *
  * @module scene/Mountains
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
-import { ProceduralTextures } from '../utils/ProceduralTextures.js';
-import { MountainMaterial } from '../materials/MountainMaterial.js';
+import * as THREE from "three";
+import { ProceduralTextures } from "../utils/ProceduralTextures.js";
+import { MountainMaterial } from "../materials/MountainMaterial.js";
 
 /**
  * Mountain configuration options
@@ -39,31 +39,31 @@ export class Mountains {
     this.options = {
       range: 300,
       count: 16,
-      quality: 'high',
+      quality: "high",
       minHeight: 30,
       maxHeight: 120,
       baseRadius: 80,
       seed: 12345,
-      ...options
+      ...options,
     };
 
     /** @type {THREE.Group} */
     this.group = new THREE.Group();
-    this.group.name = 'Mountains';
+    this.group.name = "Mountains";
 
     /** @type {THREE.Mesh[]} */
     this.mountains = [];
     /** @type {MountainMaterial} */
     this.material = null;
-    
+
     /** @type {number} */
     this.mountainCount = 0;
-    
+
     /** @type {Object} */
     this._animationState = {
       time: 0,
       windStrength: 0.02,
-      windDirection: new THREE.Vector2(1, 0.3).normalize()
+      windDirection: new THREE.Vector2(1, 0.3).normalize(),
     };
   }
 
@@ -72,7 +72,7 @@ export class Mountains {
    * @returns {Promise<void>}
    */
   async build() {
-    console.log('[Mountains] Building Rayman-style mountain range...');
+    console.log("[Mountains] Building Rayman-style mountain range...");
 
     // Generate textures
     this._generateTextures();
@@ -105,7 +105,7 @@ export class Mountains {
       heightScale: 1.0,
       ridgeFactor: 0.85,
       valleyDepth: 0.15,
-      seed: this.options.seed
+      seed: this.options.seed,
     });
 
     // Color texture (tri-planar friendly)
@@ -116,7 +116,7 @@ export class Mountains {
       snowColor: [0.95, 0.95, 0.98],
       snowLine: 0.7,
       snowTransition: 0.12,
-      seed: this.options.seed + 1
+      seed: this.options.seed + 1,
     });
 
     // Normal map for detail
@@ -177,14 +177,20 @@ export class Mountains {
       }
     }
 
-    const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat, THREE.FloatType);
+    const texture = new THREE.DataTexture(
+      data,
+      size,
+      size,
+      THREE.RGBAFormat,
+      THREE.FloatType,
+    );
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.generateMipmaps = true;
     texture.needsUpdate = true;
-    texture.name = 'MountainNormalMap';
+    texture.name = "MountainNormalMap";
 
     return texture;
   }
@@ -203,19 +209,26 @@ export class Mountains {
         const noise = this._noise2D(x * 0.01, y * 0.01, prng);
         // Rougher at higher values (peaks)
         const height = (noise + 1) * 0.5;
-        const roughness = THREE.MathUtils.lerp(0.7, 0.95, height) + (prng() - 0.5) * 0.1;
+        const roughness =
+          THREE.MathUtils.lerp(0.7, 0.95, height) + (prng() - 0.5) * 0.1;
         data[y * size + x] = THREE.MathUtils.clamp(roughness, 0.5, 1.0);
       }
     }
 
-    const texture = new THREE.DataTexture(data, size, size, THREE.RedFormat, THREE.FloatType);
+    const texture = new THREE.DataTexture(
+      data,
+      size,
+      size,
+      THREE.RedFormat,
+      THREE.FloatType,
+    );
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.generateMipmaps = true;
     texture.needsUpdate = true;
-    texture.name = 'MountainRoughnessMap';
+    texture.name = "MountainRoughnessMap";
 
     return texture;
   }
@@ -241,14 +254,20 @@ export class Mountains {
       }
     }
 
-    const texture = new THREE.DataTexture(data, size, size, THREE.RedFormat, THREE.FloatType);
+    const texture = new THREE.DataTexture(
+      data,
+      size,
+      size,
+      THREE.RedFormat,
+      THREE.FloatType,
+    );
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.generateMipmaps = true;
     texture.needsUpdate = true;
-    texture.name = 'MountainVegetationMask';
+    texture.name = "MountainVegetationMask";
 
     return texture;
   }
@@ -267,7 +286,7 @@ export class Mountains {
       displacementScale: 1.0,
       snowLine: 0.7,
       snowTransition: 0.12,
-      vegetationDensity: 0.3
+      vegetationDensity: 0.3,
     });
   }
 
@@ -284,22 +303,23 @@ export class Mountains {
 
     for (let i = 0; i < this.options.count; i++) {
       // Spiral distribution with some randomness
-      const radius = this.options.range * (0.3 + 0.7 * Math.sqrt(i / this.options.count));
+      const radius =
+        this.options.range * (0.3 + 0.7 * Math.sqrt(i / this.options.count));
       const angle = i * goldenAngle + prng() * 0.5;
-      
+
       // Add some clustering
       const clusterOffset = prng() * 30 - 15;
-      
+
       const x = Math.cos(angle) * (radius + clusterOffset);
       const z = Math.sin(angle) * (radius + clusterOffset);
-      
+
       // Height based on distance from center (higher in middle)
       const distFromCenter = Math.sqrt(x * x + z * z) / this.options.range;
       const heightFactor = 1.0 - distFromCenter * 0.5;
       const baseHeight = THREE.MathUtils.lerp(
         this.options.maxHeight * 0.4,
         this.options.maxHeight,
-        heightFactor
+        heightFactor,
       );
       const height = baseHeight * (0.7 + prng() * 0.6);
 
@@ -320,11 +340,7 @@ export class Mountains {
         steepness,
         peakSharpness,
         rotation,
-        scale: new THREE.Vector3(
-          0.8 + prng() * 0.4,
-          1.0,
-          0.8 + prng() * 0.4
-        )
+        scale: new THREE.Vector3(0.8 + prng() * 0.4, 1.0, 0.8 + prng() * 0.4),
       });
     }
 
@@ -340,7 +356,7 @@ export class Mountains {
       low: { radialSegments: 16, heightSegments: 8 },
       medium: { radialSegments: 24, heightSegments: 12 },
       high: { radialSegments: 32, heightSegments: 16 },
-      ultra: { radialSegments: 48, heightSegments: 24 }
+      ultra: { radialSegments: 48, heightSegments: 24 },
     };
 
     const detail = detailLevels[this.options.quality] || detailLevels.high;
@@ -352,9 +368,9 @@ export class Mountains {
         data.height,
         detail.radialSegments,
         detail.heightSegments,
-        false
+        false,
       );
-      
+
       geometry.rotateY(data.rotation);
       geometry.translate(0, data.height * 0.5, 0);
       geometry.name = `Mountain_${index}`;
@@ -408,7 +424,7 @@ export class Mountains {
 
       // Height-based profile
       let profile = 1.0 - Math.pow(y / data.height, data.steepness);
-      
+
       // Peak sharpening
       if (y / data.height > 0.8) {
         profile *= 1.0 + data.peakSharpness * (y / data.height - 0.8) * 5;
@@ -416,12 +432,9 @@ export class Mountains {
 
       // Add noise for natural variation
       const noiseScale = 0.02;
-      const noise = this._noise3D(
-        x * noiseScale,
-        y * noiseScale,
-        z * noiseScale,
-        prng
-      ) * 0.1;
+      const noise =
+        this._noise3D(x * noiseScale, y * noiseScale, z * noiseScale, prng) *
+        0.1;
 
       // Apply displacement
       const displacement = profile * (1 + noise);
@@ -434,7 +447,8 @@ export class Mountains {
       }
 
       // Vertical displacement for ridges
-      const ridgeNoise = this._noise2D(x * 0.05, z * 0.05, prng) * 0.05 * data.height;
+      const ridgeNoise =
+        this._noise2D(x * 0.05, z * 0.05, prng) * 0.05 * data.height;
       position.setY(i, y + ridgeNoise * (1 - y / data.height));
     }
 
@@ -465,9 +479,20 @@ export class Mountains {
       const localY = y - mesh.position.y;
       if (localY > data.height * 0.6) {
         const factor = (localY - data.height * 0.6) / (data.height * 0.4);
-        const sway = Math.sin(time * windSpeed + position.getX(i) * 0.1 + position.getZ(i) * 0.1) * windStrength * factor;
-        position.setX(i, position.getX(i) + sway * this._animationState.windDirection.x);
-        position.setZ(i, position.getZ(i) + sway * this._animationState.windDirection.y);
+        const sway =
+          Math.sin(
+            time * windSpeed + position.getX(i) * 0.1 + position.getZ(i) * 0.1,
+          ) *
+          windStrength *
+          factor;
+        position.setX(
+          i,
+          position.getX(i) + sway * this._animationState.windDirection.x,
+        );
+        position.setZ(
+          i,
+          position.getZ(i) + sway * this._animationState.windDirection.y,
+        );
       }
     }
 
@@ -481,7 +506,7 @@ export class Mountains {
    */
   setQuality(quality) {
     this.options.quality = quality;
-    
+
     if (this.material) {
       // Update material quality settings
       this.material.setQuality(quality);
@@ -512,7 +537,7 @@ export class Mountains {
    */
   getBounds() {
     const box = new THREE.Box3();
-    this.mountains.forEach(mesh => {
+    this.mountains.forEach((mesh) => {
       const meshBox = new THREE.Box3().setFromObject(mesh);
       box.union(meshBox);
     });
@@ -539,8 +564,12 @@ export class Mountains {
 
     return this._lerp(
       this._lerp(this._grad2D(p[A], x, y), this._grad2D(p[B], x - 1, y), u),
-      this._lerp(this._grad2D(p[A + 1], x, y - 1), this._grad2D(p[B + 1], x - 1, y - 1), u),
-      v
+      this._lerp(
+        this._grad2D(p[A + 1], x, y - 1),
+        this._grad2D(p[B + 1], x - 1, y - 1),
+        u,
+      ),
+      v,
     );
   }
 
@@ -571,27 +600,60 @@ export class Mountains {
 
     return this._lerp(
       this._lerp(
-        this._lerp(this._grad3D(p[AA], x, y, z), this._grad3D(p[BA], x - 1, y, z), u),
-        this._lerp(this._grad3D(p[AB], x, y - 1, z), this._grad3D(p[BB], x - 1, y - 1, z), u),
-        v
+        this._lerp(
+          this._grad3D(p[AA], x, y, z),
+          this._grad3D(p[BA], x - 1, y, z),
+          u,
+        ),
+        this._lerp(
+          this._grad3D(p[AB], x, y - 1, z),
+          this._grad3D(p[BB], x - 1, y - 1, z),
+          u,
+        ),
+        v,
       ),
       this._lerp(
-        this._lerp(this._grad3D(p[AA + 1], x, y, z - 1), this._grad3D(p[BA + 1], x - 1, y, z - 1), u),
-        this._lerp(this._grad3D(p[AB + 1], x, y - 1, z - 1), this._grad3D(p[BB + 1], x - 1, y - 1, z - 1), u),
-        v
+        this._lerp(
+          this._grad3D(p[AA + 1], x, y, z - 1),
+          this._grad3D(p[BA + 1], x - 1, y, z - 1),
+          u,
+        ),
+        this._lerp(
+          this._grad3D(p[AB + 1], x, y - 1, z - 1),
+          this._grad3D(p[BB + 1], x - 1, y - 1, z - 1),
+          u,
+        ),
+        v,
       ),
-      w
+      w,
     );
   }
 
-  _fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-  _lerp(a, b, t) { return a + t * (b - a); }
-  _grad2D(hash, x, y) { const h = hash & 7; const u = h < 4 ? x : y; const v = h < 4 ? y : x; return ((h & 1) ? -u : u) + ((h & 2) ? -v : v); }
-  _grad3D(hash, x, y, z) { const h = hash & 15; const u = h < 8 ? x : y; const v = h < 4 ? y : (h === 12 || h === 14 ? x : z); return ((h & 1) ? -u : u) + ((h & 2) ? -v : v); }
+  _fade(t) {
+    return t * t * t * (t * (t * 6 - 15) + 10);
+  }
+  _lerp(a, b, t) {
+    return a + t * (b - a);
+  }
+  _grad2D(hash, x, y) {
+    const h = hash & 7;
+    const u = h < 4 ? x : y;
+    const v = h < 4 ? y : x;
+    return (h & 1 ? -u : u) + (h & 2 ? -v : v);
+  }
+  _grad3D(hash, x, y, z) {
+    const h = hash & 15;
+    const u = h < 8 ? x : y;
+    const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+    return (h & 1 ? -u : u) + (h & 2 ? -v : v);
+  }
 
   _createPRNG(seed) {
     let s = seed >>> 0;
-    return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+    return () => {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
   }
 
   _generatePermutation(prng) {
@@ -609,12 +671,12 @@ export class Mountains {
    * Dispose of resources
    */
   dispose() {
-    this.mountains.forEach(mesh => {
+    this.mountains.forEach((mesh) => {
       mesh.geometry.dispose();
     });
-    
+
     if (this.material) this.material.dispose();
-    
+
     if (this.heightmapTexture) this.heightmapTexture.dispose();
     if (this.colorTexture) this.colorTexture.dispose();
     if (this.normalTexture) this.normalTexture.dispose();

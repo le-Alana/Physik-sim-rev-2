@@ -1,39 +1,39 @@
 /**
  * SSAOPass - Screen Space Ambient Occlusion Pass
- * 
+ *
  * Implements SSAO using a multi-scale approach with temporal filtering
  * for high-quality ambient occlusion at reasonable performance.
- * 
+ *
  * @module core/postprocessing/SSAOPass
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
-import { Pass } from 'three/examples/jsm/postprocessing/Pass.js';
+import * as THREE from "three";
+import { Pass } from "three/examples/jsm/postprocessing/Pass.js";
 
 /**
  * SSAO Shader - Multi-scale ambient occlusion
  */
 const SSAOShader = {
-  name: 'SSAOShader',
+  name: "SSAOShader",
   uniforms: {
-    'tDiffuse': { value: null },
-    'tNormal': { value: null },
-    'tDepth': { value: null },
-    'tNoise': { value: null },
-    'cameraNear': { value: 0.1 },
-    'cameraFar': { value: 1000 },
-    'resolution': { value: new THREE.Vector2(1, 1) },
-    'inverseProjectionMatrix': { value: new THREE.Matrix4() },
-    'kernelRadius': { value: 1.0 },
-    'intensity': { value: 1.0 },
-    'bias': { value: 0.025 },
-    'samples': { value: 16 },
-    'radiusScale': { value: 1.0 },
-    'distanceFalloff': { value: 1.0 },
-    'temporal': { value: 0 },
-    'tPrevious': { value: null },
-    'jitter': { value: new THREE.Vector2(0, 0) }
+    tDiffuse: { value: null },
+    tNormal: { value: null },
+    tDepth: { value: null },
+    tNoise: { value: null },
+    cameraNear: { value: 0.1 },
+    cameraFar: { value: 1000 },
+    resolution: { value: new THREE.Vector2(1, 1) },
+    inverseProjectionMatrix: { value: new THREE.Matrix4() },
+    kernelRadius: { value: 1.0 },
+    intensity: { value: 1.0 },
+    bias: { value: 0.025 },
+    samples: { value: 16 },
+    radiusScale: { value: 1.0 },
+    distanceFalloff: { value: 1.0 },
+    temporal: { value: 0 },
+    tPrevious: { value: null },
+    jitter: { value: new THREE.Vector2(0, 0) },
   },
 
   vertexShader: `
@@ -187,25 +187,25 @@ const SSAOShader = {
 
       gl_FragColor = vec4(finalColor, occlusion);
     }
-  `
+  `,
 };
 
 /**
  * SSAO Blur Shader - Bilateral blur for noise reduction
  */
 const SSAOBlurShader = {
-  name: 'SSAOBlurShader',
+  name: "SSAOBlurShader",
   uniforms: {
-    'tDiffuse': { value: null },
-    'tNormal': { value: null },
-    'tDepth': { value: null },
-    'resolution': { value: new THREE.Vector2(1, 1) },
-    'cameraNear': { value: 0.1 },
-    'cameraFar': { value: 1000 },
-    'inverseProjectionMatrix': { value: new THREE.Matrix4() },
-    'kernelRadius': { value: 4.0 },
-    'direction': { value: new THREE.Vector2(1, 0) },
-    'sharpness': { value: 8.0 }
+    tDiffuse: { value: null },
+    tNormal: { value: null },
+    tDepth: { value: null },
+    resolution: { value: new THREE.Vector2(1, 1) },
+    cameraNear: { value: 0.1 },
+    cameraFar: { value: 1000 },
+    inverseProjectionMatrix: { value: new THREE.Matrix4() },
+    kernelRadius: { value: 4.0 },
+    direction: { value: new THREE.Vector2(1, 0) },
+    sharpness: { value: 8.0 },
   },
 
   vertexShader: `
@@ -299,7 +299,7 @@ const SSAOBlurShader = {
       float finalAO = weightSum > 0.0 ? aoSum / weightSum : centerAO;
       gl_FragColor = vec4(texture2D(tDiffuse, vUv).rgb, finalAO);
     }
-  `
+  `,
 };
 
 /**
@@ -315,7 +315,7 @@ export class SSAOPass extends Pass {
   constructor(scene, camera, width, height) {
     super();
 
-    this.name = 'SSAOPass';
+    this.name = "SSAOPass";
     this.needsSwap = true;
     this.clear = false;
     this.renderToScreen = false;
@@ -365,46 +365,54 @@ export class SSAOPass extends Pass {
    */
   _init() {
     // Normal + Depth target
-    this._normalDepthTarget = new THREE.WebGLRenderTarget(this.width, this.height, {
-      type: THREE.FloatType,
-      format: THREE.RGBAFormat,
-      minFilter: THREE.NearestFilter,
-      magFilter: THREE.NearestFilter,
-      depthBuffer: true
-    });
-    this._normalDepthTarget.texture.name = 'SSAO.NormalDepth';
+    this._normalDepthTarget = new THREE.WebGLRenderTarget(
+      this.width,
+      this.height,
+      {
+        type: THREE.FloatType,
+        format: THREE.RGBAFormat,
+        minFilter: THREE.NearestFilter,
+        magFilter: THREE.NearestFilter,
+        depthBuffer: true,
+      },
+    );
+    this._normalDepthTarget.texture.name = "SSAO.NormalDepth";
 
     // SSAO target
     this._ssaoTarget = new THREE.WebGLRenderTarget(this.width, this.height, {
       type: THREE.HalfFloatType,
       format: THREE.RGBAFormat,
       minFilter: THREE.LinearFilter,
-      magFilter: THREE.LinearFilter
+      magFilter: THREE.LinearFilter,
     });
-    this._ssaoTarget.texture.name = 'SSAO.Output';
+    this._ssaoTarget.texture.name = "SSAO.Output";
 
     // Blur target
     this._blurTarget = new THREE.WebGLRenderTarget(this.width, this.height, {
       type: THREE.HalfFloatType,
       format: THREE.RGBAFormat,
       minFilter: THREE.LinearFilter,
-      magFilter: THREE.LinearFilter
+      magFilter: THREE.LinearFilter,
     });
-    this._blurTarget.texture.name = 'SSAO.Blur';
+    this._blurTarget.texture.name = "SSAO.Blur";
 
     // Previous frame for temporal
-    this._previousTarget = new THREE.WebGLRenderTarget(this.width, this.height, {
-      type: THREE.HalfFloatType,
-      format: THREE.RGBAFormat
-    });
-    this._previousTarget.texture.name = 'SSAO.Previous';
+    this._previousTarget = new THREE.WebGLRenderTarget(
+      this.width,
+      this.height,
+      {
+        type: THREE.HalfFloatType,
+        format: THREE.RGBAFormat,
+      },
+    );
+    this._previousTarget.texture.name = "SSAO.Previous";
 
     // Normal + Depth material
     this._normalDepthMaterial = new THREE.ShaderMaterial({
-      name: 'SSAO.NormalDepth',
+      name: "SSAO.NormalDepth",
       uniforms: {
         cameraNear: { value: this.camera.near },
-        cameraFar: { value: this.camera.far }
+        cameraFar: { value: this.camera.far },
       },
       vertexShader: `
         varying vec3 vViewPosition;
@@ -427,43 +435,43 @@ export class SSAOPass extends Pass {
           float linearDepth = depth / cameraFar;
           gl_FragColor = vec4(normal, linearDepth);
         }
-      `
+      `,
     });
 
     // SSAO material
     this._ssaoMaterial = new THREE.ShaderMaterial({
-      name: 'SSAO',
+      name: "SSAO",
       uniforms: THREE.UniformsUtils.clone(SSAOShader.uniforms),
       vertexShader: SSAOShader.vertexShader,
       fragmentShader: SSAOShader.fragmentShader,
       defines: {
-        MAX_SAMPLES: 64
-      }
+        MAX_SAMPLES: 64,
+      },
     });
 
     // Horizontal blur
     this._blurHMaterial = new THREE.ShaderMaterial({
-      name: 'SSAO.BlurH',
+      name: "SSAO.BlurH",
       uniforms: THREE.UniformsUtils.clone(SSAOBlurShader.uniforms),
       vertexShader: SSAOBlurShader.vertexShader,
-      fragmentShader: SSAOBlurShader.fragmentShader
+      fragmentShader: SSAOBlurShader.fragmentShader,
     });
     this._blurHMaterial.uniforms.direction.value.set(1.0, 0.0);
 
     // Vertical blur
     this._blurVMaterial = new THREE.ShaderMaterial({
-      name: 'SSAO.BlurV',
+      name: "SSAO.BlurV",
       uniforms: THREE.UniformsUtils.clone(SSAOBlurShader.uniforms),
       vertexShader: SSAOBlurShader.vertexShader,
-      fragmentShader: SSAOBlurShader.fragmentShader
+      fragmentShader: SSAOBlurShader.fragmentShader,
     });
     this._blurVMaterial.uniforms.direction.value.set(0.0, 1.0);
 
     // Copy material
     this._copyMaterial = new THREE.ShaderMaterial({
-      name: 'SSAO.Copy',
+      name: "SSAO.Copy",
       uniforms: {
-        tDiffuse: { value: null }
+        tDiffuse: { value: null },
       },
       vertexShader: `
         varying vec2 vUv;
@@ -478,7 +486,7 @@ export class SSAOPass extends Pass {
         void main() {
           gl_FragColor = texture2D(tDiffuse, vUv);
         }
-      `
+      `,
     });
 
     this._fsQuad.material = this._ssaoMaterial;
@@ -492,7 +500,7 @@ export class SSAOPass extends Pass {
   _createNoiseTexture() {
     const size = 4;
     const data = new Float32Array(size * size * 3);
-    
+
     for (let i = 0; i < size * size; i++) {
       // Random vectors in hemisphere
       const theta = Math.random() * Math.PI * 2;
@@ -500,17 +508,23 @@ export class SSAOPass extends Pass {
       const x = Math.sin(phi) * Math.cos(theta);
       const y = Math.sin(phi) * Math.sin(theta);
       const z = Math.cos(phi);
-      
+
       data[i * 3] = x;
       data[i * 3 + 1] = y;
       data[i * 3 + 2] = z;
     }
 
-    const texture = new THREE.DataTexture(data, size, size, THREE.RGBFormat, THREE.FloatType);
+    const texture = new THREE.DataTexture(
+      data,
+      size,
+      size,
+      THREE.RGBFormat,
+      THREE.FloatType,
+    );
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.needsUpdate = true;
-    texture.name = 'SSAO.Noise';
+    texture.name = "SSAO.Noise";
     return texture;
   }
 
@@ -561,10 +575,20 @@ export class SSAOPass extends Pass {
     this._renderSSAO(renderer, readBuffer);
 
     // 3. Horizontal blur
-    this._renderBlur(renderer, this._blurHMaterial, this._ssaoTarget, this._blurTarget);
+    this._renderBlur(
+      renderer,
+      this._blurHMaterial,
+      this._ssaoTarget,
+      this._blurTarget,
+    );
 
     // 4. Vertical blur
-    this._renderBlur(renderer, this._blurVMaterial, this._blurTarget, this._ssaoTarget);
+    this._renderBlur(
+      renderer,
+      this._blurVMaterial,
+      this._blurTarget,
+      this._ssaoTarget,
+    );
 
     // 5. Composite with original
     this._composite(renderer, writeBuffer, readBuffer);
@@ -607,7 +631,9 @@ export class SSAOPass extends Pass {
     uniforms.cameraNear.value = this.camera.near;
     uniforms.cameraFar.value = this.camera.far;
     uniforms.resolution.value.set(this.width, this.height);
-    uniforms.inverseProjectionMatrix.value.copy(this.camera.projectionMatrixInverse);
+    uniforms.inverseProjectionMatrix.value.copy(
+      this.camera.projectionMatrixInverse,
+    );
     uniforms.kernelRadius.value = this.kernelRadius;
     uniforms.intensity.value = this.intensity;
     uniforms.bias.value = this.bias;
@@ -617,7 +643,8 @@ export class SSAOPass extends Pass {
     uniforms.tPrevious.value = this._previousTarget.texture;
 
     // Jitter
-    const jitter = this._jitterOffsets[this._jitterIndex % this._jitterOffsets.length];
+    const jitter =
+      this._jitterOffsets[this._jitterIndex % this._jitterOffsets.length];
     uniforms.jitter.value.set(jitter.x / this.width, jitter.y / this.height);
     this._jitterIndex++;
 
@@ -635,7 +662,9 @@ export class SSAOPass extends Pass {
     material.uniforms.resolution.value.set(this.width, this.height);
     material.uniforms.cameraNear.value = this.camera.near;
     material.uniforms.cameraFar.value = this.camera.far;
-    material.uniforms.inverseProjectionMatrix.value.copy(this.camera.projectionMatrixInverse);
+    material.uniforms.inverseProjectionMatrix.value.copy(
+      this.camera.projectionMatrixInverse,
+    );
     material.uniforms.kernelRadius.value = this.kernelRadius * 2.0;
 
     this._fsQuad.material = material;
@@ -653,7 +682,7 @@ export class SSAOPass extends Pass {
     const compositeMaterial = new THREE.ShaderMaterial({
       uniforms: {
         tDiffuse: { value: readBuffer.texture },
-        tAO: { value: this._ssaoTarget.texture }
+        tAO: { value: this._ssaoTarget.texture },
       },
       vertexShader: `
         varying vec2 vUv;
@@ -671,7 +700,7 @@ export class SSAOPass extends Pass {
           float ao = texture2D(tAO, vUv).a;
           gl_FragColor = vec4(color * ao, 1.0);
         }
-      `
+      `,
     });
 
     this._fsQuad.material = compositeMaterial;
@@ -683,18 +712,34 @@ export class SSAOPass extends Pass {
     this.width = width;
     this.height = height;
 
-    const targets = [this._normalDepthTarget, this._ssaoTarget, this._blurTarget, this._previousTarget];
-    targets.forEach(target => {
+    const targets = [
+      this._normalDepthTarget,
+      this._ssaoTarget,
+      this._blurTarget,
+      this._previousTarget,
+    ];
+    targets.forEach((target) => {
       if (target) target.setSize(width, height);
     });
   }
 
   dispose() {
-    const targets = [this._normalDepthTarget, this._ssaoTarget, this._blurTarget, this._previousTarget];
-    targets.forEach(target => target?.dispose());
+    const targets = [
+      this._normalDepthTarget,
+      this._ssaoTarget,
+      this._blurTarget,
+      this._previousTarget,
+    ];
+    targets.forEach((target) => target?.dispose());
 
-    const materials = [this._normalDepthMaterial, this._ssaoMaterial, this._blurHMaterial, this._blurVMaterial, this._copyMaterial];
-    materials.forEach(mat => mat?.dispose());
+    const materials = [
+      this._normalDepthMaterial,
+      this._ssaoMaterial,
+      this._blurHMaterial,
+      this._blurVMaterial,
+      this._copyMaterial,
+    ];
+    materials.forEach((mat) => mat?.dispose());
 
     this._noiseTexture?.dispose();
     this._fsQuad?.dispose();

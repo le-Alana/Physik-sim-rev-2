@@ -1,33 +1,33 @@
 /**
  * ToneMappingPass - Advanced Tone Mapping with Multiple Operators
- * 
+ *
  * Supports ACES Filmic, Reinhard, Uncharted 2, and Custom tone mapping
  * with exposure control, white balance, and color grading.
- * 
+ *
  * @module core/postprocessing/ToneMappingPass
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
-import { Pass } from 'three/examples/jsm/postprocessing/Pass.js';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import * as THREE from "three";
+import { Pass } from "three/examples/jsm/postprocessing/Pass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 
 /**
  * Tone Mapping Shader - Multiple tone mapping operators
  */
 const ToneMappingShader = {
-  name: 'ToneMappingShader',
+  name: "ToneMappingShader",
   uniforms: {
-    'tDiffuse': { value: null },
-    'exposure': { value: 1.0 },
-    'toneMapping': { value: 0 }, // 0=ACES, 1=Reinhard, 2=Uncharted2, 3=Custom
-    'whitePoint': { value: 1.0 },
-    'contrast': { value: 1.0 },
-    'saturation': { value: 1.0 },
-    'colorBalance': { value: new THREE.Vector3(1, 1, 1) },
-    'lift': { value: new THREE.Vector3(0, 0, 0) },
-    'gamma': { value: 2.2 },
-    'outputColorSpace': { value: 0 } // 0=SRGB, 1=Linear
+    tDiffuse: { value: null },
+    exposure: { value: 1.0 },
+    toneMapping: { value: 0 }, // 0=ACES, 1=Reinhard, 2=Uncharted2, 3=Custom
+    whitePoint: { value: 1.0 },
+    contrast: { value: 1.0 },
+    saturation: { value: 1.0 },
+    colorBalance: { value: new THREE.Vector3(1, 1, 1) },
+    lift: { value: new THREE.Vector3(0, 0, 0) },
+    gamma: { value: 2.2 },
+    outputColorSpace: { value: 0 }, // 0=SRGB, 1=Linear
   },
 
   vertexShader: `
@@ -176,7 +176,7 @@ const ToneMappingShader = {
       
       gl_FragColor = vec4(color, 1.0);
     }
-  `
+  `,
 };
 
 /**
@@ -189,7 +189,7 @@ export class ToneMappingPass extends Pass {
   constructor(options = {}) {
     super();
 
-    this.name = 'ToneMappingPass';
+    this.name = "ToneMappingPass";
     this.needsSwap = true;
     this.clear = false;
     this.renderToScreen = false;
@@ -208,7 +208,7 @@ export class ToneMappingPass extends Pass {
       [THREE.ACESFilmicToneMapping]: 0,
       [THREE.AgXToneMapping]: 3,
       [THREE.NeutralToneMapping]: 3,
-      [THREE.CustomToneMapping]: 3
+      [THREE.CustomToneMapping]: 3,
     };
 
     // Additional color grading
@@ -232,17 +232,19 @@ export class ToneMappingPass extends Pass {
    */
   _init() {
     this._shaderPass = new ShaderPass(ToneMappingShader);
-    
+
     // Set initial uniforms
     this._shaderPass.material.uniforms.exposure.value = this.exposure;
-    this._shaderPass.material.uniforms.toneMapping.value = this._getToneMappingIndex(this.toneMapping);
+    this._shaderPass.material.uniforms.toneMapping.value =
+      this._getToneMappingIndex(this.toneMapping);
     this._shaderPass.material.uniforms.whitePoint.value = this.whitePoint;
     this._shaderPass.material.uniforms.contrast.value = this.contrast;
     this._shaderPass.material.uniforms.saturation.value = this.saturation;
     this._shaderPass.material.uniforms.colorBalance.value = this.colorBalance;
     this._shaderPass.material.uniforms.lift.value = this.lift;
     this._shaderPass.material.uniforms.gamma.value = this.gamma;
-    this._shaderPass.material.uniforms.outputColorSpace.value = this.outputColorSpace === THREE.SRGBColorSpace ? 0 : 1;
+    this._shaderPass.material.uniforms.outputColorSpace.value =
+      this.outputColorSpace === THREE.SRGBColorSpace ? 0 : 1;
   }
 
   /**
@@ -286,7 +288,8 @@ export class ToneMappingPass extends Pass {
   setToneMapping(toneMapping) {
     this.toneMapping = toneMapping;
     if (this._shaderPass) {
-      this._shaderPass.material.uniforms.toneMapping.value = this._getToneMappingIndex(toneMapping);
+      this._shaderPass.material.uniforms.toneMapping.value =
+        this._getToneMappingIndex(toneMapping);
     }
   }
 
@@ -363,7 +366,8 @@ export class ToneMappingPass extends Pass {
   setOutputColorSpace(colorSpace) {
     this.outputColorSpace = colorSpace;
     if (this._shaderPass) {
-      this._shaderPass.material.uniforms.outputColorSpace.value = colorSpace === THREE.SRGBColorSpace ? 0 : 1;
+      this._shaderPass.material.uniforms.outputColorSpace.value =
+        colorSpace === THREE.SRGBColorSpace ? 0 : 1;
     }
   }
 
@@ -381,7 +385,7 @@ export class ToneMappingPass extends Pass {
       colorBalance: this.colorBalance.clone(),
       lift: this.lift.clone(),
       gamma: this.gamma,
-      outputColorSpace: this.outputColorSpace
+      outputColorSpace: this.outputColorSpace,
     };
   }
 
@@ -391,14 +395,19 @@ export class ToneMappingPass extends Pass {
    */
   applySettings(settings) {
     if (settings.exposure !== undefined) this.setExposure(settings.exposure);
-    if (settings.toneMapping !== undefined) this.setToneMapping(settings.toneMapping);
-    if (settings.whitePoint !== undefined) this.setWhitePoint(settings.whitePoint);
+    if (settings.toneMapping !== undefined)
+      this.setToneMapping(settings.toneMapping);
+    if (settings.whitePoint !== undefined)
+      this.setWhitePoint(settings.whitePoint);
     if (settings.contrast !== undefined) this.setContrast(settings.contrast);
-    if (settings.saturation !== undefined) this.setSaturation(settings.saturation);
-    if (settings.colorBalance !== undefined) this.setColorBalance(settings.colorBalance);
+    if (settings.saturation !== undefined)
+      this.setSaturation(settings.saturation);
+    if (settings.colorBalance !== undefined)
+      this.setColorBalance(settings.colorBalance);
     if (settings.lift !== undefined) this.setLift(settings.lift);
     if (settings.gamma !== undefined) this.setGamma(settings.gamma);
-    if (settings.outputColorSpace !== undefined) this.setOutputColorSpace(settings.outputColorSpace);
+    if (settings.outputColorSpace !== undefined)
+      this.setOutputColorSpace(settings.outputColorSpace);
   }
 
   /**
@@ -427,7 +436,7 @@ export const ToneMappingPresets = {
     saturation: 1.0,
     colorBalance: new THREE.Vector3(1, 1, 1),
     lift: new THREE.Vector3(0, 0, 0),
-    gamma: 2.2
+    gamma: 2.2,
   },
   cinematic: {
     exposure: 1.2,
@@ -437,7 +446,7 @@ export const ToneMappingPresets = {
     saturation: 0.9,
     colorBalance: new THREE.Vector3(1.02, 0.99, 0.97),
     lift: new THREE.Vector3(0.01, 0.005, 0),
-    gamma: 2.2
+    gamma: 2.2,
   },
   vibrant: {
     exposure: 1.0,
@@ -447,7 +456,7 @@ export const ToneMappingPresets = {
     saturation: 1.25,
     colorBalance: new THREE.Vector3(1, 1, 1),
     lift: new THREE.Vector3(0, 0, 0),
-    gamma: 2.2
+    gamma: 2.2,
   },
   moody: {
     exposure: 0.8,
@@ -457,7 +466,7 @@ export const ToneMappingPresets = {
     saturation: 0.7,
     colorBalance: new THREE.Vector3(0.98, 0.96, 1.02),
     lift: new THREE.Vector3(0.02, 0.015, 0.03),
-    gamma: 2.4
+    gamma: 2.4,
   },
   hdr: {
     exposure: 1.5,
@@ -467,8 +476,8 @@ export const ToneMappingPresets = {
     saturation: 1.0,
     colorBalance: new THREE.Vector3(1, 1, 1),
     lift: new THREE.Vector3(0, 0, 0),
-    gamma: 2.2
-  }
+    gamma: 2.2,
+  },
 };
 
 export default ToneMappingPass;

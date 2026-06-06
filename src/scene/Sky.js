@@ -1,18 +1,18 @@
 /**
  * Sky - Procedural Sky with Volumetric Clouds
- * 
+ *
  * Implements a physically-based sky model with:
  * - Rayleigh/Mie scattering for atmospheric effects
  * - Volumetric 3D clouds using ray-marching
  * - Dynamic sun positioning
  * - Time-of-day transitions
- * 
+ *
  * @module scene/Sky
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
-import { ProceduralTextures } from '../utils/ProceduralTextures.js';
+import * as THREE from "three";
+import { ProceduralTextures } from "../utils/ProceduralTextures.js";
 
 /**
  * Sky configuration options
@@ -31,20 +31,20 @@ import { ProceduralTextures } from '../utils/ProceduralTextures.js';
  */
 const SkyShader = {
   uniforms: {
-    'sunPosition': { value: new THREE.Vector3(0, 1, 0) },
-    'turbidity': { value: 2.0 },
-    'rayleigh': { value: 1.0 },
-    'mieCoefficient': { value: 0.005 },
-    'mieDirectionalG': { value: 0.8 },
-    'luminance': { value: 1.0 },
-    'saturation': { value: 1.0 },
-    'groundColor': { value: new THREE.Color(0.3, 0.35, 0.4) },
-    'cameraPos': { value: new THREE.Vector3() },
-    'time': { value: 0 },
-    'cloudTexture': { value: null },
-    'cloudOffset': { value: new THREE.Vector2(0, 0) },
-    'cloudScale': { value: 1.0 },
-    'cloudSpeed': { value: 0.5 }
+    sunPosition: { value: new THREE.Vector3(0, 1, 0) },
+    turbidity: { value: 2.0 },
+    rayleigh: { value: 1.0 },
+    mieCoefficient: { value: 0.005 },
+    mieDirectionalG: { value: 0.8 },
+    luminance: { value: 1.0 },
+    saturation: { value: 1.0 },
+    groundColor: { value: new THREE.Color(0.3, 0.35, 0.4) },
+    cameraPos: { value: new THREE.Vector3() },
+    time: { value: 0 },
+    cloudTexture: { value: null },
+    cloudOffset: { value: new THREE.Vector2(0, 0) },
+    cloudScale: { value: 1.0 },
+    cloudSpeed: { value: 0.5 },
   },
 
   vertexShader: `
@@ -216,7 +216,7 @@ const SkyShader = {
       
       gl_FragColor = vec4(color, 1.0);
     }
-  `
+  `,
 };
 
 /**
@@ -224,20 +224,20 @@ const SkyShader = {
  */
 const CloudVolumeShader = {
   uniforms: {
-    'cameraPos': { value: new THREE.Vector3() },
-    'sunPosition': { value: new THREE.Vector3(0, 1, 0) },
-    'cloudTexture': { value: null },
-    'weatherTexture': { value: null },
-    'time': { value: 0 },
-    'cloudScale': { value: 1.0 },
-    'cloudSpeed': { value: 1.0 },
-    'density': { value: 1.0 },
-    'absorption': { value: 0.5 },
-    'phaseG': { value: 0.6 },
-    'samples': { value: 64 },
-    'maxDistance': { value: 10000 },
-    'cloudBase': { value: 6000 },
-    'cloudTop': { value: 12000 }
+    cameraPos: { value: new THREE.Vector3() },
+    sunPosition: { value: new THREE.Vector3(0, 1, 0) },
+    cloudTexture: { value: null },
+    weatherTexture: { value: null },
+    time: { value: 0 },
+    cloudScale: { value: 1.0 },
+    cloudSpeed: { value: 1.0 },
+    density: { value: 1.0 },
+    absorption: { value: 0.5 },
+    phaseG: { value: 0.6 },
+    samples: { value: 64 },
+    maxDistance: { value: 10000 },
+    cloudBase: { value: 6000 },
+    cloudTop: { value: 12000 },
   },
 
   vertexShader: `
@@ -353,7 +353,7 @@ const CloudVolumeShader = {
       // Premultiply alpha
       gl_FragColor = vec4(cloudColor.rgb * cloudColor.a, cloudColor.a);
     }
-  `
+  `,
 };
 
 /**
@@ -366,13 +366,13 @@ export class Sky {
   constructor(options = {}) {
     this.options = {
       radius: 5000,
-      quality: 'high',
+      quality: "high",
       sunPosition: new THREE.Vector3(100, 80, 50),
       turbidity: 2.0,
       rayleigh: 1.0,
       mieCoefficient: 0.005,
       mieDirectionalG: 0.8,
-      ...options
+      ...options,
     };
 
     /** @type {THREE.Mesh} */
@@ -387,12 +387,12 @@ export class Sky {
     this.cloudTexture = null;
     /** @type {THREE.Texture} */
     this.weatherTexture = null;
-    
+
     /** @type {Object} */
     this._animationState = {
       time: 0,
       cloudOffset: new THREE.Vector2(0, 0),
-      sunAngle: 0
+      sunAngle: 0,
     };
   }
 
@@ -401,7 +401,7 @@ export class Sky {
    * @returns {Promise<void>}
    */
   async build() {
-    console.log('[Sky] Building sky dome and volumetric clouds...');
+    console.log("[Sky] Building sky dome and volumetric clouds...");
 
     // Generate procedural textures
     this._generateTextures();
@@ -415,7 +415,7 @@ export class Sky {
     // Create meshes
     this._createMeshes();
 
-    console.log('[Sky] Sky built successfully');
+    console.log("[Sky] Sky built successfully");
   }
 
   /**
@@ -427,31 +427,38 @@ export class Sky {
       low: { cloudSize: 128, weatherSize: 64 },
       medium: { cloudSize: 256, weatherSize: 128 },
       high: { cloudSize: 512, weatherSize: 256 },
-      ultra: { cloudSize: 1024, weatherSize: 512 }
+      ultra: { cloudSize: 1024, weatherSize: 512 },
     };
 
-    const settings = qualitySettings[this.options.quality] || qualitySettings.high;
+    const settings =
+      qualitySettings[this.options.quality] || qualitySettings.high;
 
     // Cloud noise texture (2D for sky dome)
-    this.cloudTexture = ProceduralTextures.generateCloudNoise(settings.cloudSize, {
-      octaves: 5,
-      persistence: 0.5,
-      lacunarity: 2.0,
-      gain: 0.5
-    });
+    this.cloudTexture = ProceduralTextures.generateCloudNoise(
+      settings.cloudSize,
+      {
+        octaves: 5,
+        persistence: 0.5,
+        lacunarity: 2.0,
+        gain: 0.5,
+      },
+    );
 
     // Weather map for volumetric clouds (3D-like)
-    this.weatherTexture = ProceduralTextures.generateNoise(settings.weatherSize, {
-      octaves: 6,
-      persistence: 0.55,
-      scale: 2.0
-    });
+    this.weatherTexture = ProceduralTextures.generateNoise(
+      settings.weatherSize,
+      {
+        octaves: 6,
+        persistence: 0.55,
+        scale: 2.0,
+      },
+    );
 
     // Also create 3D noise for higher quality volumetric clouds
-    if (this.options.quality === 'high' || this.options.quality === 'ultra') {
+    if (this.options.quality === "high" || this.options.quality === "ultra") {
       this.cloudVolumeTexture = ProceduralTextures.generateCloudNoise3D(
-        this.options.quality === 'ultra' ? 64 : 48,
-        { octaves: 4, persistence: 0.5 }
+        this.options.quality === "ultra" ? 64 : 48,
+        { octaves: 4, persistence: 0.5 },
       );
     }
   }
@@ -462,21 +469,23 @@ export class Sky {
    */
   _createSkyMaterial() {
     this.skyMaterial = new THREE.ShaderMaterial({
-      name: 'SkyAtmosphere',
+      name: "SkyAtmosphere",
       uniforms: THREE.UniformsUtils.clone(SkyShader.uniforms),
       vertexShader: SkyShader.vertexShader,
       fragmentShader: SkyShader.fragmentShader,
       side: THREE.BackSide,
       depthWrite: false,
-      fog: false
+      fog: false,
     });
 
     // Set initial uniforms
     this.skyMaterial.uniforms.sunPosition.value.copy(this.options.sunPosition);
     this.skyMaterial.uniforms.turbidity.value = this.options.turbidity;
     this.skyMaterial.uniforms.rayleigh.value = this.options.rayleigh;
-    this.skyMaterial.uniforms.mieCoefficient.value = this.options.mieCoefficient;
-    this.skyMaterial.uniforms.mieDirectionalG.value = this.options.mieDirectionalG;
+    this.skyMaterial.uniforms.mieCoefficient.value =
+      this.options.mieCoefficient;
+    this.skyMaterial.uniforms.mieDirectionalG.value =
+      this.options.mieDirectionalG;
     this.skyMaterial.uniforms.cloudTexture.value = this.cloudTexture;
   }
 
@@ -486,7 +495,7 @@ export class Sky {
    */
   _createCloudMaterial() {
     this.cloudMaterial = new THREE.ShaderMaterial({
-      name: 'VolumetricClouds',
+      name: "VolumetricClouds",
       uniforms: THREE.UniformsUtils.clone(CloudVolumeShader.uniforms),
       vertexShader: CloudVolumeShader.vertexShader,
       fragmentShader: CloudVolumeShader.fragmentShader,
@@ -494,7 +503,7 @@ export class Sky {
       transparent: true,
       depthWrite: false,
       blending: THREE.NormalBlending,
-      fog: false
+      fog: false,
     });
 
     // Set initial uniforms
@@ -504,7 +513,7 @@ export class Sky {
     cloudUniforms.weatherTexture.value = this.weatherTexture;
     cloudUniforms.cloudBase.value = this.options.radius * 0.8;
     cloudUniforms.cloudTop.value = this.options.radius;
-    
+
     // Quality-based sample count
     const sampleCounts = { low: 16, medium: 32, high: 64, ultra: 96 };
     cloudUniforms.samples.value = sampleCounts[this.options.quality] || 64;
@@ -518,13 +527,17 @@ export class Sky {
     // Sky dome - large sphere
     const skyGeometry = new THREE.SphereGeometry(this.options.radius, 32, 32);
     this.mesh = new THREE.Mesh(skyGeometry, this.skyMaterial);
-    this.mesh.name = 'SkyDome';
+    this.mesh.name = "SkyDome";
     this.mesh.frustumCulled = false;
 
     // Cloud volume - slightly larger sphere for clouds
-    const cloudGeometry = new THREE.SphereGeometry(this.options.radius * 1.02, 32, 32);
+    const cloudGeometry = new THREE.SphereGeometry(
+      this.options.radius * 1.02,
+      32,
+      32,
+    );
     this.cloudMesh = new THREE.Mesh(cloudGeometry, this.cloudMaterial);
-    this.cloudMesh.name = 'CloudVolume';
+    this.cloudMesh.name = "CloudVolume";
     this.cloudMesh.frustumCulled = false;
     this.cloudMesh.renderOrder = -1; // Render before sky dome
 
@@ -547,14 +560,17 @@ export class Sky {
     // Update sky material uniforms
     if (this.skyMaterial) {
       this.skyMaterial.uniforms.time.value = elapsedTime;
-      this.skyMaterial.uniforms.cloudOffset.value.copy(this._animationState.cloudOffset);
+      this.skyMaterial.uniforms.cloudOffset.value.copy(
+        this._animationState.cloudOffset,
+      );
     }
 
     // Update cloud material uniforms
     if (this.cloudMaterial) {
       this.cloudMaterial.uniforms.time.value = elapsedTime;
       this.cloudMaterial.uniforms.cameraPos.value.copy(
-        this.mesh.parent?.worldToLocal?.(new THREE.Vector3()) || new THREE.Vector3()
+        this.mesh.parent?.worldToLocal?.(new THREE.Vector3()) ||
+          new THREE.Vector3(),
       );
     }
   }
@@ -567,7 +583,7 @@ export class Sky {
    */
   setSunPosition(x, y, z) {
     this.options.sunPosition.set(x, y, z);
-    
+
     if (this.skyMaterial) {
       this.skyMaterial.uniforms.sunPosition.value.set(x, y, z);
     }
@@ -590,13 +606,21 @@ export class Sky {
    */
   setAtmosphere(params) {
     if (this.skyMaterial) {
-      if (params.turbidity !== undefined) this.skyMaterial.uniforms.turbidity.value = params.turbidity;
-      if (params.rayleigh !== undefined) this.skyMaterial.uniforms.rayleigh.value = params.rayleigh;
-      if (params.mieCoefficient !== undefined) this.skyMaterial.uniforms.mieCoefficient.value = params.mieCoefficient;
-      if (params.mieDirectionalG !== undefined) this.skyMaterial.uniforms.mieDirectionalG.value = params.mieDirectionalG;
-      if (params.luminance !== undefined) this.skyMaterial.uniforms.luminance.value = params.luminance;
-      if (params.saturation !== undefined) this.skyMaterial.uniforms.saturation.value = params.saturation;
-      if (params.groundColor !== undefined) this.skyMaterial.uniforms.groundColor.value.copy(params.groundColor);
+      if (params.turbidity !== undefined)
+        this.skyMaterial.uniforms.turbidity.value = params.turbidity;
+      if (params.rayleigh !== undefined)
+        this.skyMaterial.uniforms.rayleigh.value = params.rayleigh;
+      if (params.mieCoefficient !== undefined)
+        this.skyMaterial.uniforms.mieCoefficient.value = params.mieCoefficient;
+      if (params.mieDirectionalG !== undefined)
+        this.skyMaterial.uniforms.mieDirectionalG.value =
+          params.mieDirectionalG;
+      if (params.luminance !== undefined)
+        this.skyMaterial.uniforms.luminance.value = params.luminance;
+      if (params.saturation !== undefined)
+        this.skyMaterial.uniforms.saturation.value = params.saturation;
+      if (params.groundColor !== undefined)
+        this.skyMaterial.uniforms.groundColor.value.copy(params.groundColor);
     }
   }
 
@@ -606,11 +630,16 @@ export class Sky {
    */
   setClouds(params) {
     if (this.cloudMaterial) {
-      if (params.density !== undefined) this.cloudMaterial.uniforms.density.value = params.density;
-      if (params.absorption !== undefined) this.cloudMaterial.uniforms.absorption.value = params.absorption;
-      if (params.phaseG !== undefined) this.cloudMaterial.uniforms.phaseG.value = params.phaseG;
-      if (params.speed !== undefined) this.cloudMaterial.uniforms.cloudSpeed.value = params.speed;
-      if (params.scale !== undefined) this.cloudMaterial.uniforms.cloudScale.value = params.scale;
+      if (params.density !== undefined)
+        this.cloudMaterial.uniforms.density.value = params.density;
+      if (params.absorption !== undefined)
+        this.cloudMaterial.uniforms.absorption.value = params.absorption;
+      if (params.phaseG !== undefined)
+        this.cloudMaterial.uniforms.phaseG.value = params.phaseG;
+      if (params.speed !== undefined)
+        this.cloudMaterial.uniforms.cloudSpeed.value = params.speed;
+      if (params.scale !== undefined)
+        this.cloudMaterial.uniforms.cloudScale.value = params.scale;
     }
   }
 
@@ -620,7 +649,7 @@ export class Sky {
    */
   setQuality(quality) {
     this.options.quality = quality;
-    
+
     // Update sample count
     const sampleCounts = { low: 16, medium: 32, high: 64, ultra: 96 };
     if (this.cloudMaterial) {

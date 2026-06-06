@@ -1,6 +1,6 @@
 /**
  * MountainMaterial - Tri-planar PBR Material for Mountains
- * 
+ *
  * Custom material for Rayman-style mountains featuring:
  * - Tri-planar mapping for seamless texturing on complex geometry
  * - Procedural snow caps at higher elevations
@@ -8,12 +8,12 @@
  * - Height-based displacement
  * - Slope-based shading (highlights/shadows)
  * - Distance-based LOD
- * 
+ *
  * @module materials/MountainMaterial
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
 /**
  * MountainMaterial configuration options
@@ -54,7 +54,7 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
       windStrength: { value: 0.0 },
       windDirection: { value: new THREE.Vector2(1, 0.3) },
       cameraPosition: { value: new THREE.Vector3() },
-      lodDistance: { value: 100 }
+      lodDistance: { value: 100 },
     };
 
     super({
@@ -62,10 +62,10 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
       roughness: 0.85,
       metalness: 0.0,
       flatShading: false,
-      ...options
+      ...options,
     });
 
-    this.name = 'MountainMaterial';
+    this.name = "MountainMaterial";
 
     // Store custom uniforms
     this.customUniforms = customUniforms;
@@ -75,7 +75,8 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
     if (options.normalMap) this.normalMap = options.normalMap;
     if (options.roughnessMap) this.roughnessMap = options.roughnessMap;
     if (options.heightMap) this.displacementMap = options.heightMap;
-    if (options.vegetationMap) this.userData.vegetationMap = options.vegetationMap;
+    if (options.vegetationMap)
+      this.userData.vegetationMap = options.vegetationMap;
 
     // Configure texture properties
     this._configureTextures();
@@ -89,14 +90,19 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
    * @private
    */
   _configureTextures() {
-    const textureNames = ['map', 'normalMap', 'roughnessMap', 'displacementMap'];
-    
-    textureNames.forEach(name => {
+    const textureNames = [
+      "map",
+      "normalMap",
+      "roughnessMap",
+      "displacementMap",
+    ];
+
+    textureNames.forEach((name) => {
       const tex = this[name];
       if (tex) {
         tex.wrapS = THREE.RepeatWrapping;
         tex.wrapT = THREE.RepeatWrapping;
-        if (name === 'normalMap' || name === 'roughnessMap') {
+        if (name === "normalMap" || name === "roughnessMap") {
           tex.colorSpace = THREE.LinearSRGBColorSpace;
         }
       }
@@ -127,18 +133,18 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
 
       // Vertex shader additions
       shader.vertexShader = shader.vertexShader.replace(
-        '#include <common>',
+        "#include <common>",
         `#include <common>
         varying vec3 vWorldPosition;
         varying vec3 vWorldNormal;
         varying vec2 vUv;
         varying float vHeight;
         varying float vSlope;
-        varying vec3 vTriplanarWeights;`
+        varying vec3 vTriplanarWeights;`,
       );
 
       shader.vertexShader = shader.vertexShader.replace(
-        '#include <begin_vertex>',
+        "#include <begin_vertex>",
         `#include <begin_vertex>
         vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
         vWorldNormal = normalize(normalMatrix * normal);
@@ -153,7 +159,7 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
         
         // Tri-planar weights based on normal
         vec3 absNormal = abs(vWorldNormal);
-        vTriplanarWeights = absNormal / (absNormal.x + absNormal.y + absNormal.z);`
+        vTriplanarWeights = absNormal / (absNormal.x + absNormal.y + absNormal.z);`,
       );
 
       // Fragment shader header with tri-planar functions
@@ -239,20 +245,20 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
       `;
 
       shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <common>',
-        customFragmentHeader
+        "#include <common>",
+        customFragmentHeader,
       );
 
       // Replace normal mapping with tri-planar normal mapping
       shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <normalmap_pars_fragment>',
+        "#include <normalmap_pars_fragment>",
         `#include <normalmap_pars_fragment>
-        // We'll compute normal manually in main`
+        // We'll compute normal manually in main`,
       );
 
       // Main fragment modifications
       shader.fragmentShader = shader.fragmentShader.replace(
-        'vec3 diffuseColor = vec3( 1.0 );',
+        "vec3 diffuseColor = vec3( 1.0 );",
         `vec3 diffuseColor = vec3( 1.0 );
         
         // Tri-planar base color
@@ -282,31 +288,31 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
         
         // Blend roughness for snow
         roughnessValue = mix(roughnessValue, snowRoughness, snowFactor);
-        roughnessValue = mix(roughnessValue, 0.95, vegFactor * 0.3);`
+        roughnessValue = mix(roughnessValue, 0.95, vegFactor * 0.3);`,
       );
 
       // Replace normal usage
       shader.fragmentShader = shader.fragmentShader.replace(
-        'vec3 normal = vWorldNormal;',
-        `vec3 normal = normalize(perturbedNormal);`
+        "vec3 normal = vWorldNormal;",
+        `vec3 normal = normalize(perturbedNormal);`,
       );
 
       // Add snow and vegetation to metalness
       shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <metalnessmap_fragment>',
+        "#include <metalnessmap_fragment>",
         `#include <metalnessmap_fragment>
-        metalnessFactor = mix(metalnessFactor, snowMetalness, snowFactor);`
+        metalnessFactor = mix(metalnessFactor, snowMetalness, snowFactor);`,
       );
 
       // Emissive for snow highlights
       shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <emissivemap_fragment>',
+        "#include <emissivemap_fragment>",
         `#include <emissivemap_fragment>
         // Subtle snow sparkle
         if (snowFactor > 0.5) {
           float sparkle = sin(vWorldPosition.x * 50.0 + time) * sin(vWorldPosition.z * 50.0 + time) * 0.5 + 0.5;
           totalEmissiveRadiance += snowColor * sparkle * snowFactor * 0.02;
-        }`
+        }`,
       );
 
       // Call original
@@ -318,7 +324,7 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
 
   /**
    * Set tri-planar scale
-   * @param {number} scale 
+   * @param {number} scale
    */
   setTriplanarScale(scale) {
     this.customUniforms.triplanarScale.value = scale;
@@ -338,7 +344,7 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
 
   /**
    * Set vegetation density
-   * @param {number} density 
+   * @param {number} density
    */
   setVegetationDensity(density) {
     this.customUniforms.vegetationDensity.value = density;
@@ -347,7 +353,7 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
 
   /**
    * Set displacement scale
-   * @param {number} scale 
+   * @param {number} scale
    */
   setDisplacementScale(scale) {
     this.customUniforms.displacementScale.value = scale;
@@ -356,8 +362,8 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
 
   /**
    * Set wind parameters for vertex animation
-   * @param {number} strength 
-   * @param {THREE.Vector2} direction 
+   * @param {number} strength
+   * @param {THREE.Vector2} direction
    */
   setWind(strength, direction) {
     this.customUniforms.windStrength.value = strength;
@@ -366,7 +372,7 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
 
   /**
    * Update camera position for LOD
-   * @param {THREE.Vector3} position 
+   * @param {THREE.Vector3} position
    */
   updateCameraPosition(position) {
     this.customUniforms.cameraPosition.value.copy(position);
@@ -374,7 +380,7 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
 
   /**
    * Set quality level
-   * @param {string} quality 
+   * @param {string} quality
    */
   setQuality(quality) {
     // Adjust parameters based on quality
@@ -382,9 +388,9 @@ export class MountainMaterial extends THREE.MeshStandardMaterial {
       low: { triplanarBlend: 5.0, displacementScale: 0.5 },
       medium: { triplanarBlend: 8.0, displacementScale: 0.75 },
       high: { triplanarBlend: 10.0, displacementScale: 1.0 },
-      ultra: { triplanarBlend: 15.0, displacementScale: 1.5 }
+      ultra: { triplanarBlend: 15.0, displacementScale: 1.5 },
     };
-    
+
     const s = settings[quality] || settings.high;
     this.customUniforms.triplanarBlend.value = s.triplanarBlend;
     this.customUniforms.displacementScale.value = s.displacementScale;

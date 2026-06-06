@@ -1,14 +1,14 @@
 /**
  * SceneManager - Scene Lifecycle and Object Management
- * 
+ *
  * Manages the Three.js scene graph, object organization,
  * lighting setup, and scene-level operations.
- * 
+ *
  * @module core/SceneManager
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
 /**
  * SceneManager configuration options
@@ -34,7 +34,7 @@ export class SceneManager {
       fogNear: 50,
       fogFar: 300,
       fogColor: 0x87ceeb,
-      ...options
+      ...options,
     };
 
     /** @type {THREE.Scene} */
@@ -64,7 +64,7 @@ export class SceneManager {
       this.scene.fog = new THREE.Fog(
         this.options.fogColor,
         this.options.fogNear,
-        this.options.fogFar
+        this.options.fogFar,
       );
     }
 
@@ -78,7 +78,9 @@ export class SceneManager {
    */
   _setupEnvironment() {
     // Create a procedural environment map as fallback
-    const pmremGenerator = new THREE.PMREMGenerator(this.renderer || new THREE.WebGLRenderer());
+    const pmremGenerator = new THREE.PMREMGenerator(
+      this.renderer || new THREE.WebGLRenderer(),
+    );
     pmremGenerator.compileEquirectangularShader();
 
     // Simple gradient environment
@@ -86,7 +88,7 @@ export class SceneManager {
     const geometry = new THREE.SphereGeometry(1, 32, 32);
     const material = new THREE.MeshBasicMaterial({
       color: 0x87ceeb,
-      side: THREE.BackSide
+      side: THREE.BackSide,
     });
     const skySphere = new THREE.Mesh(geometry, material);
     envScene.add(skySphere);
@@ -153,7 +155,7 @@ export class SceneManager {
   removeObject(nameOrObject) {
     let object;
 
-    if (typeof nameOrObject === 'string') {
+    if (typeof nameOrObject === "string") {
       object = this.objects.get(nameOrObject);
       if (object) {
         this.objects.delete(nameOrObject);
@@ -200,8 +202,8 @@ export class SceneManager {
    */
   removeLight(lightOrName) {
     let light;
-    if (typeof lightOrName === 'string') {
-      const index = this.lights.findIndex(l => l.name === lightOrName);
+    if (typeof lightOrName === "string") {
+      const index = this.lights.findIndex((l) => l.name === lightOrName);
       if (index !== -1) {
         light = this.lights.splice(index, 1)[0];
       }
@@ -233,9 +235,10 @@ export class SceneManager {
    * @param {THREE.Color|number|string|THREE.Texture} background - Background value
    */
   setBackground(background) {
-    this.scene.background = background instanceof THREE.Color 
-      ? background 
-      : new THREE.Color(background);
+    this.scene.background =
+      background instanceof THREE.Color
+        ? background
+        : new THREE.Color(background);
   }
 
   /**
@@ -250,7 +253,7 @@ export class SceneManager {
       this.scene.fog = new THREE.Fog(
         color instanceof THREE.Color ? color : new THREE.Color(color),
         near,
-        far
+        far,
       );
     } else {
       this.scene.fog = null;
@@ -263,12 +266,14 @@ export class SceneManager {
    */
   setEnvironment(envMap) {
     this.scene.environment = envMap;
-    
+
     // Update all PBR materials in scene
     this.scene.traverse((object) => {
       if (object.isMesh && object.material) {
-        const materials = Array.isArray(object.material) ? object.material : [object.material];
-        materials.forEach(mat => {
+        const materials = Array.isArray(object.material)
+          ? object.material
+          : [object.material];
+        materials.forEach((mat) => {
           if (mat.isMeshStandardMaterial || mat.isMeshPhysicalMaterial) {
             mat.envMap = envMap;
             mat.needsUpdate = true;
@@ -310,11 +315,13 @@ export class SceneManager {
     }
 
     if (object.material) {
-      const materials = Array.isArray(object.material) ? object.material : [object.material];
-      materials.forEach(material => {
+      const materials = Array.isArray(object.material)
+        ? object.material
+        : [object.material];
+      materials.forEach((material) => {
         material.dispose();
         // Dispose textures
-        Object.values(material).forEach(value => {
+        Object.values(material).forEach((value) => {
           if (value && value.isTexture) {
             value.dispose();
           }
@@ -323,7 +330,7 @@ export class SceneManager {
     }
 
     // Recursively dispose children
-    object.children.forEach(child => this._disposeObject(child));
+    object.children.forEach((child) => this._disposeObject(child));
   }
 
   /**
@@ -343,7 +350,7 @@ export class SceneManager {
     this.groups.clear();
 
     // Remove lights
-    this.lights.forEach(light => this.scene.remove(light));
+    this.lights.forEach((light) => this.scene.remove(light));
     this.lights = [];
 
     // Clear scene children (except camera if added)
@@ -353,7 +360,7 @@ export class SceneManager {
         toRemove.push(object);
       }
     });
-    toRemove.forEach(obj => this.scene.remove(obj));
+    toRemove.forEach((obj) => this.scene.remove(obj));
 
     this.isBuilt = false;
   }
@@ -373,10 +380,12 @@ export class SceneManager {
       if (object.isMesh) {
         meshes++;
         if (object.geometry) geometries++;
-        const mats = Array.isArray(object.material) ? object.material : [object.material];
-        mats.forEach(mat => {
+        const mats = Array.isArray(object.material)
+          ? object.material
+          : [object.material];
+        mats.forEach((mat) => {
           materials++;
-          Object.values(mat).forEach(val => {
+          Object.values(mat).forEach((val) => {
             if (val && val.isTexture) textures++;
           });
         });
@@ -390,7 +399,7 @@ export class SceneManager {
       textures,
       lights,
       objects: this.objects.size,
-      groups: this.groups.size
+      groups: this.groups.size,
     };
   }
 }

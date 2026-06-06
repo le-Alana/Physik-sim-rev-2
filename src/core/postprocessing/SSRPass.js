@@ -1,43 +1,43 @@
 /**
  * SSRPass - Screen Space Reflections Pass
- * 
+ *
  * Implements screen-space reflections using ray-marching in view space.
  * Supports temporal accumulation for noise reduction.
- * 
+ *
  * @module core/postprocessing/SSRPass
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
-import { Pass } from 'three/examples/jsm/postprocessing/Pass.js';
+import * as THREE from "three";
+import { Pass } from "three/examples/jsm/postprocessing/Pass.js";
 
 /**
  * SSR Shader - Handles screen-space reflection calculation
  */
 const SSRShader = {
-  name: 'SSRShader',
+  name: "SSRShader",
   uniforms: {
-    'tDiffuse': { value: null },
-    'tNormal': { value: null },
-    'tDepth': { value: null },
-    'tMetalness': { value: null },
-    'tRoughness': { value: null },
-    'cameraNear': { value: 0.1 },
-    'cameraFar': { value: 1000 },
-    'resolution': { value: new THREE.Vector2(1, 1) },
-    'projectionMatrix': { value: new THREE.Matrix4() },
-    'inverseProjectionMatrix': { value: new THREE.Matrix4() },
-    'cameraMatrixWorld': { value: new THREE.Matrix4() },
-    'thickness': { value: 0.06 },
-    'maxDistance': { value: 100 },
-    'samples': { value: 24 },
-    'binarySearchSteps': { value: 16 },
-    'fresnelBias': { value: 0.1 },
-    'fresnelPower': { value: 2.0 },
-    'fresnelScale': { value: 1.0 },
-    'temporal': { value: 0 },
-    'tPrevious': { value: null },
-    'jitter': { value: new THREE.Vector2(0, 0) }
+    tDiffuse: { value: null },
+    tNormal: { value: null },
+    tDepth: { value: null },
+    tMetalness: { value: null },
+    tRoughness: { value: null },
+    cameraNear: { value: 0.1 },
+    cameraFar: { value: 1000 },
+    resolution: { value: new THREE.Vector2(1, 1) },
+    projectionMatrix: { value: new THREE.Matrix4() },
+    inverseProjectionMatrix: { value: new THREE.Matrix4() },
+    cameraMatrixWorld: { value: new THREE.Matrix4() },
+    thickness: { value: 0.06 },
+    maxDistance: { value: 100 },
+    samples: { value: 24 },
+    binarySearchSteps: { value: 16 },
+    fresnelBias: { value: 0.1 },
+    fresnelPower: { value: 2.0 },
+    fresnelScale: { value: 1.0 },
+    temporal: { value: 0 },
+    tPrevious: { value: null },
+    jitter: { value: new THREE.Vector2(0, 0) },
   },
 
   vertexShader: `
@@ -244,7 +244,7 @@ const SSRShader = {
       
       gl_FragColor = vec4(finalColor, 1.0);
     }
-  `
+  `,
 };
 
 /**
@@ -256,8 +256,8 @@ export class SSRPass extends Pass {
    */
   constructor(options = {}) {
     super();
-    
-    this.name = 'SSRPass';
+
+    this.name = "SSRPass";
     this.needsSwap = true;
     this.clear = false;
     this.renderToScreen = false;
@@ -312,18 +312,18 @@ export class SSRPass extends Pass {
       minFilter: THREE.NearestFilter,
       magFilter: THREE.NearestFilter,
       depthBuffer: true,
-      stencilBuffer: false
+      stencilBuffer: false,
     });
-    this._normalDepthTarget.texture.name = 'SSR.NormalDepth';
+    this._normalDepthTarget.texture.name = "SSR.NormalDepth";
 
     // Metalness + Roughness render target
     this._metalRoughTarget = new THREE.WebGLRenderTarget(width, height, {
       type: THREE.HalfFloatType,
       format: THREE.RGFormat,
       minFilter: THREE.NearestFilter,
-      magFilter: THREE.NearestFilter
+      magFilter: THREE.NearestFilter,
     });
-    this._metalRoughTarget.texture.name = 'SSR.MetalRough';
+    this._metalRoughTarget.texture.name = "SSR.MetalRough";
 
     // SSR output target
     this._ssrTarget = new THREE.WebGLRenderTarget(width, height, {
@@ -331,24 +331,24 @@ export class SSRPass extends Pass {
       format: THREE.RGBAFormat,
       colorSpace: THREE.SRGBColorSpace,
       minFilter: THREE.LinearFilter,
-      magFilter: THREE.LinearFilter
+      magFilter: THREE.LinearFilter,
     });
-    this._ssrTarget.texture.name = 'SSR.Output';
+    this._ssrTarget.texture.name = "SSR.Output";
 
     // Previous frame for temporal accumulation
     this._previousTarget = new THREE.WebGLRenderTarget(width, height, {
       type: THREE.HalfFloatType,
       format: THREE.RGBAFormat,
-      colorSpace: THREE.SRGBColorSpace
+      colorSpace: THREE.SRGBColorSpace,
     });
-    this._previousTarget.texture.name = 'SSR.Previous';
+    this._previousTarget.texture.name = "SSR.Previous";
 
     // Normal + Depth material - renders view-space normals and depth
     this._normalDepthMaterial = new THREE.ShaderMaterial({
-      name: 'SSR.NormalDepth',
+      name: "SSR.NormalDepth",
       uniforms: {
         cameraNear: { value: this.camera.near },
-        cameraFar: { value: this.camera.far }
+        cameraFar: { value: this.camera.far },
       },
       vertexShader: `
         varying vec3 vViewPosition;
@@ -373,12 +373,12 @@ export class SSRPass extends Pass {
           float linearDepth = depth / cameraFar;
           gl_FragColor = vec4(normal, linearDepth);
         }
-      `
+      `,
     });
 
     // Metalness + Roughness material
     this._metalRoughMaterial = new THREE.ShaderMaterial({
-      name: 'SSR.MetalRough',
+      name: "SSR.MetalRough",
       uniforms: {},
       vertexShader: `
         varying vec2 vUv;
@@ -393,26 +393,26 @@ export class SSRPass extends Pass {
           // This will be overridden by material properties
           gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
-      `
+      `,
     });
 
     // SSR material using our custom shader
     this._ssrMaterial = new THREE.ShaderMaterial({
-      name: 'SSR',
+      name: "SSR",
       uniforms: THREE.UniformsUtils.clone(SSRShader.uniforms),
       vertexShader: SSRShader.vertexShader,
       fragmentShader: SSRShader.fragmentShader,
       defines: {
         MAX_SAMPLES: 64,
-        BINARY_SEARCH_STEPS: 16
-      }
+        BINARY_SEARCH_STEPS: 16,
+      },
     });
 
     // Copy material for temporal accumulation
     this._copyMaterial = new THREE.ShaderMaterial({
-      name: 'SSR.Copy',
+      name: "SSR.Copy",
       uniforms: {
-        tDiffuse: { value: null }
+        tDiffuse: { value: null },
       },
       vertexShader: `
         varying vec2 vUv;
@@ -427,7 +427,7 @@ export class SSRPass extends Pass {
         void main() {
           gl_FragColor = texture2D(tDiffuse, vUv);
         }
-      `
+      `,
     });
 
     this._fsQuad.material = this._ssrMaterial;
@@ -471,9 +471,9 @@ export class SSRPass extends Pass {
 
   /**
    * Render the SSR pass
-   * @param {THREE.WebGLRenderer} renderer 
-   * @param {THREE.WebGLRenderTarget} writeBuffer 
-   * @param {THREE.WebGLRenderTarget} readBuffer 
+   * @param {THREE.WebGLRenderer} renderer
+   * @param {THREE.WebGLRenderTarget} writeBuffer
+   * @param {THREE.WebGLRenderTarget} readBuffer
    */
   render(renderer, writeBuffer, readBuffer) {
     if (!this.enabled) {
@@ -501,7 +501,7 @@ export class SSRPass extends Pass {
     } else {
       renderer.setRenderTarget(writeBuffer);
     }
-    
+
     this._fsQuad.material = this._copyMaterial;
     this._copyMaterial.uniforms.tDiffuse.value = this._ssrTarget.texture;
     this._fsQuad.render(renderer);
@@ -550,7 +550,7 @@ export class SSRPass extends Pass {
     this.scene.traverse((object) => {
       if (object.isMesh && object.material) {
         originalMaterials.set(object, object.material);
-        
+
         // Create a material that outputs metalness/roughness
         const mat = object.material;
         if (mat.isMeshStandardMaterial || mat.isMeshPhysicalMaterial) {
@@ -559,7 +559,7 @@ export class SSRPass extends Pass {
               metalness: { value: mat.metalness },
               roughness: { value: mat.roughness },
               metalnessMap: { value: mat.metalnessMap },
-              roughnessMap: { value: mat.roughnessMap }
+              roughnessMap: { value: mat.roughnessMap },
             },
             vertexShader: `
               varying vec2 vUv;
@@ -581,7 +581,7 @@ export class SSRPass extends Pass {
                 if (roughnessMap) r *= texture2D(roughnessMap, vUv).g;
                 gl_FragColor = vec4(m, r, 0.0, 1.0);
               }
-            `
+            `,
           });
           object.material = mrMaterial;
           originalMaterials.set(object, mat); // Store original for restoration
@@ -615,16 +615,19 @@ export class SSRPass extends Pass {
     uniforms.cameraFar.value = this.camera.far;
     uniforms.resolution.value.set(this.width, this.height);
     uniforms.projectionMatrix.value.copy(this.camera.projectionMatrix);
-    uniforms.inverseProjectionMatrix.value.copy(this.camera.projectionMatrixInverse);
+    uniforms.inverseProjectionMatrix.value.copy(
+      this.camera.projectionMatrixInverse,
+    );
     uniforms.cameraMatrixWorld.value.copy(this.camera.matrixWorld);
     uniforms.thickness.value = this.thickness;
     uniforms.maxDistance.value = this.maxDistance;
     uniforms.samples.value = this.samples;
     uniforms.temporal.value = this._temporalFrame > 1 ? 1.0 : 0.0;
     uniforms.tPrevious.value = this._previousTarget.texture;
-    
+
     // Apply jitter for TAA
-    const jitter = this._jitterOffsets[this._jitterIndex % this._jitterOffsets.length];
+    const jitter =
+      this._jitterOffsets[this._jitterIndex % this._jitterOffsets.length];
     uniforms.jitter.value.set(jitter.x / this.width, jitter.y / this.height);
     this._jitterIndex++;
 
@@ -652,8 +655,13 @@ export class SSRPass extends Pass {
     const scaledWidth = Math.floor(width * this.resolutionScale);
     const scaledHeight = Math.floor(height * this.resolutionScale);
 
-    const targets = [this._normalDepthTarget, this._metalRoughTarget, this._ssrTarget, this._previousTarget];
-    targets.forEach(target => {
+    const targets = [
+      this._normalDepthTarget,
+      this._metalRoughTarget,
+      this._ssrTarget,
+      this._previousTarget,
+    ];
+    targets.forEach((target) => {
       if (target) {
         target.setSize(scaledWidth, scaledHeight);
       }
@@ -664,13 +672,23 @@ export class SSRPass extends Pass {
    * Dispose of resources
    */
   dispose() {
-    const targets = [this._normalDepthTarget, this._metalRoughTarget, this._ssrTarget, this._previousTarget];
-    targets.forEach(target => {
+    const targets = [
+      this._normalDepthTarget,
+      this._metalRoughTarget,
+      this._ssrTarget,
+      this._previousTarget,
+    ];
+    targets.forEach((target) => {
       if (target) target.dispose();
     });
 
-    const materials = [this._normalDepthMaterial, this._metalRoughMaterial, this._ssrMaterial, this._copyMaterial];
-    materials.forEach(mat => {
+    const materials = [
+      this._normalDepthMaterial,
+      this._metalRoughMaterial,
+      this._ssrMaterial,
+      this._copyMaterial,
+    ];
+    materials.forEach((mat) => {
       if (mat) mat.dispose();
     });
 

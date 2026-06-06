@@ -1,15 +1,15 @@
 /**
  * CameraController - Input Handling and Camera Movement
- * 
+ *
  * Provides orbital camera controls with damping, constraints,
  * and smooth interpolation for cinematic movement.
- * 
+ *
  * @module core/CameraController
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 /**
  * CameraController configuration options
@@ -60,7 +60,7 @@ export class CameraController {
       zoomSpeed: 1.0,
       panSpeed: 1.0,
       rotateSpeed: 1.0,
-      ...options
+      ...options,
     };
 
     /** @type {THREE.PerspectiveCamera} */
@@ -68,7 +68,7 @@ export class CameraController {
       60, // FOV
       window.innerWidth / window.innerHeight, // Aspect
       0.1, // Near
-      1000 // Far
+      1000, // Far
     );
 
     /** @type {OrbitControls} */
@@ -89,7 +89,7 @@ export class CameraController {
       endTarget: new THREE.Vector3(),
       startTime: 0,
       duration: 0,
-      easing: (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t // easeInOutQuad
+      easing: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t), // easeInOutQuad
     };
 
     /** @type {Map<string, Function>} */
@@ -131,13 +131,13 @@ export class CameraController {
     c.mouseButtons = {
       LEFT: THREE.MOUSE.ROTATE,
       MIDDLE: THREE.MOUSE.DOLLY,
-      RIGHT: THREE.MOUSE.PAN
+      RIGHT: THREE.MOUSE.PAN,
     };
 
     // Touch gestures
     c.touches = {
       ONE: THREE.TOUCH.ROTATE,
-      TWO: THREE.TOUCH.DOLLY_PAN
+      TWO: THREE.TOUCH.DOLLY_PAN,
     };
   }
 
@@ -146,18 +146,18 @@ export class CameraController {
    * @private
    */
   _setupEventListeners() {
-    this.controls.addEventListener('change', () => {
+    this.controls.addEventListener("change", () => {
       this.target.copy(this.controls.target);
       this.position.copy(this.camera.position);
-      this._emit('change', { position: this.position, target: this.target });
+      this._emit("change", { position: this.position, target: this.target });
     });
 
-    this.controls.addEventListener('start', () => {
-      this._emit('start', { position: this.position, target: this.target });
+    this.controls.addEventListener("start", () => {
+      this._emit("start", { position: this.position, target: this.target });
     });
 
-    this.controls.addEventListener('end', () => {
-      this._emit('end', { position: this.position, target: this.target });
+    this.controls.addEventListener("end", () => {
+      this._emit("end", { position: this.position, target: this.target });
     });
   }
 
@@ -177,17 +177,17 @@ export class CameraController {
       this.camera.position.lerpVectors(
         this._animationState.startPosition,
         this._animationState.endPosition,
-        eased
+        eased,
       );
       this.controls.target.lerpVectors(
         this._animationState.startTarget,
         this._animationState.endTarget,
-        eased
+        eased,
       );
 
       if (progress >= 1) {
         this._animationState.isAnimating = false;
-        this._emit('animationComplete');
+        this._emit("animationComplete");
       }
     }
   }
@@ -235,12 +235,12 @@ export class CameraController {
       this._animationState.easing = easing || this._animationState.easing;
 
       const onComplete = () => {
-        this._callbacks.delete('animationComplete');
+        this._callbacks.delete("animationComplete");
         resolve();
       };
 
-      this._callbacks.set('animationComplete', onComplete);
-      this.on('animationComplete', onComplete);
+      this._callbacks.set("animationComplete", onComplete);
+      this.on("animationComplete", onComplete);
     });
   }
 
@@ -274,7 +274,7 @@ export class CameraController {
       aspect: this.camera.aspect,
       near: this.camera.near,
       far: this.camera.far,
-      zoom: this.controls.getZoomScale()
+      zoom: this.controls.getZoomScale(),
     };
   }
 
@@ -289,7 +289,7 @@ export class CameraController {
       return this.animateTo({
         position: state.position,
         target: state.target,
-        duration
+        duration,
       });
     }
 
@@ -358,19 +358,21 @@ export class CameraController {
       .normalize();
 
     const targetPosition = center.clone();
-    const cameraPosition = targetPosition.clone().add(direction.multiplyScalar(cameraDistance));
+    const cameraPosition = targetPosition
+      .clone()
+      .add(direction.multiplyScalar(cameraDistance));
 
     if (animate) {
       return this.animateTo({
         position: cameraPosition,
         target: targetPosition,
-        duration
+        duration,
       });
     }
 
     this.setState({
       position: cameraPosition,
-      target: targetPosition
+      target: targetPosition,
     });
   }
 
@@ -409,7 +411,7 @@ export class CameraController {
    */
   _emit(event, data) {
     if (this._callbacks.has(event)) {
-      this._callbacks.get(event).forEach(callback => callback(data));
+      this._callbacks.get(event).forEach((callback) => callback(data));
     }
   }
 

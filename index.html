@@ -7,6 +7,17 @@
   <title>Physik Sim - WebGPU 3D Engine</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/node_modules/three/build/three.module.js",
+      "three/": "/node_modules/three/",
+      "three/webgpu": "/node_modules/three/webgpu.js",
+      "three/webgl": "/node_modules/three/webgl.js",
+      "three/examples/jsm/": "/node_modules/three/examples/jsm/"
+    }
+  }
+  </script>
   <style>
     * {
       margin: 0;
@@ -79,6 +90,7 @@
       font-size: 12px;
       z-index: 100;
       pointer-events: none;
+      -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }

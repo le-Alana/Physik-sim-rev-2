@@ -1,14 +1,14 @@
 /**
  * ProceduralTextures - Runtime Texture Generation
- * 
+ *
  * Generates procedural textures for noise, wear, scratches,
  * clouds, and other effects without external assets.
- * 
+ *
  * @module utils/ProceduralTextures
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
 /**
  * ProceduralTextures - Static utility for generating textures
@@ -27,7 +27,7 @@ export class ProceduralTextures {
       scale = 1.0,
       seed = Math.random() * 10000,
       type = THREE.FloatType,
-      format = THREE.RedFormat
+      format = THREE.RedFormat,
     } = options;
 
     const data = new Float32Array(size * size);
@@ -59,7 +59,7 @@ export class ProceduralTextures {
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.needsUpdate = true;
-    texture.name = 'ProceduralNoise';
+    texture.name = "ProceduralNoise";
 
     return texture;
   }
@@ -75,7 +75,7 @@ export class ProceduralTextures {
       octaves = 3,
       persistence = 0.5,
       scale = 1.0,
-      seed = Math.random() * 10000
+      seed = Math.random() * 10000,
     } = options;
 
     const data = new Float32Array(size * size * size);
@@ -111,7 +111,7 @@ export class ProceduralTextures {
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.needsUpdate = true;
-    texture.name = 'ProceduralNoise3D';
+    texture.name = "ProceduralNoise3D";
 
     return texture;
   }
@@ -129,7 +129,7 @@ export class ProceduralTextures {
       scratchLength = 0.3,
       dustDensity = 0.05,
       edgeWear = 0.3,
-      seed = Math.random() * 10000
+      seed = Math.random() * 10000,
     } = options;
 
     const data = new Uint8Array(size * size * 4);
@@ -138,10 +138,10 @@ export class ProceduralTextures {
     // Base layer - subtle noise
     for (let i = 0; i < size * size; i++) {
       const noise = this._hash(prng(), prng()) * 0.1;
-      data[i * 4] = Math.floor(noise * 255);     // R - wear amount
+      data[i * 4] = Math.floor(noise * 255); // R - wear amount
       data[i * 4 + 1] = Math.floor(noise * 255); // G - scratch mask
-      data[i * 4 + 2] = 0;                        // B - reserved
-      data[i * 4 + 3] = 255;                      // A - valid
+      data[i * 4 + 2] = 0; // B - reserved
+      data[i * 4 + 3] = 255; // A - valid
     }
 
     // Add scratches
@@ -167,7 +167,10 @@ export class ProceduralTextures {
             const idx = (py * size + px) * 4;
             // Scratch intensity falls off from center
             const falloff = 1.0 - Math.abs(w) / (width + 1);
-            data[idx + 1] = Math.min(255, data[idx + 1] + Math.floor(falloff * 200));
+            data[idx + 1] = Math.min(
+              255,
+              data[idx + 1] + Math.floor(falloff * 200),
+            );
           }
         }
       }
@@ -190,7 +193,7 @@ export class ProceduralTextures {
         const distX = Math.min(x, size - 1 - x);
         const distY = Math.min(y, size - 1 - y);
         const dist = Math.min(distX, distY);
-        
+
         if (dist < edgeDist) {
           const idx = (y * size + x) * 4;
           const factor = 1.0 - dist / edgeDist;
@@ -199,14 +202,20 @@ export class ProceduralTextures {
       }
     }
 
-    const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat, THREE.UnsignedByteType);
+    const texture = new THREE.DataTexture(
+      data,
+      size,
+      size,
+      THREE.RGBAFormat,
+      THREE.UnsignedByteType,
+    );
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.generateMipmaps = true;
     texture.needsUpdate = true;
-    texture.name = 'ProceduralWear';
+    texture.name = "ProceduralWear";
 
     return texture;
   }
@@ -220,7 +229,11 @@ export class ProceduralTextures {
   static generateCurvature(heightMap, size = 512) {
     // This would require reading the height map pixels
     // For now, generate a procedural approximation
-    return this.generateNoise(size, { octaves: 6, persistence: 0.6, scale: 2.0 });
+    return this.generateNoise(size, {
+      octaves: 6,
+      persistence: 0.6,
+      scale: 2.0,
+    });
   }
 
   /**
@@ -235,7 +248,7 @@ export class ProceduralTextures {
       persistence = 0.5,
       lacunarity = 2.0,
       gain = 0.5,
-      seed = Math.random() * 10000
+      seed = Math.random() * 10000,
     } = options;
 
     const data = new Float32Array(size * size);
@@ -265,13 +278,19 @@ export class ProceduralTextures {
       }
     }
 
-    const texture = new THREE.DataTexture(data, size, size, THREE.RedFormat, THREE.FloatType);
+    const texture = new THREE.DataTexture(
+      data,
+      size,
+      size,
+      THREE.RedFormat,
+      THREE.FloatType,
+    );
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.needsUpdate = true;
-    texture.name = 'ProceduralCloudNoise';
+    texture.name = "ProceduralCloudNoise";
 
     return texture;
   }
@@ -287,7 +306,7 @@ export class ProceduralTextures {
       octaves = 4,
       persistence = 0.5,
       lacunarity = 2.0,
-      seed = Math.random() * 10000
+      seed = Math.random() * 10000,
     } = options;
 
     const data = new Float32Array(size * size * size);
@@ -324,7 +343,7 @@ export class ProceduralTextures {
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.needsUpdate = true;
-    texture.name = 'ProceduralCloudNoise3D';
+    texture.name = "ProceduralCloudNoise3D";
 
     return texture;
   }
@@ -343,7 +362,7 @@ export class ProceduralTextures {
       tileColor2 = [0.1, 0.1, 0.15],
       grooveColor = [0.05, 0.05, 0.1],
       reflectivity = 0.3,
-      seed = Math.random() * 10000
+      seed = Math.random() * 10000,
     } = options;
 
     const data = new Float32Array(size * size * 4);
@@ -358,8 +377,10 @@ export class ProceduralTextures {
         const inTileY = y % tileSize;
 
         // Check if in groove
-        const inGrooveX = inTileX < grooveWidth || inTileX >= tileSize - grooveWidth;
-        const inGrooveY = inTileY < grooveWidth || inTileY >= tileSize - grooveWidth;
+        const inGrooveX =
+          inTileX < grooveWidth || inTileX >= tileSize - grooveWidth;
+        const inGrooveY =
+          inTileY < grooveWidth || inTileY >= tileSize - grooveWidth;
 
         const idx = (y * size + x) * 4;
 
@@ -373,10 +394,10 @@ export class ProceduralTextures {
           // Tile - alternating pattern
           const isEven = (tileX + tileY) % 2 === 0;
           const color = isEven ? tileColor1 : tileColor2;
-          
+
           // Add subtle variation per tile
           const variation = (prng() - 0.5) * 0.02;
-          
+
           data[idx] = color[0] + variation;
           data[idx + 1] = color[1] + variation;
           data[idx + 2] = color[2] + variation;
@@ -385,7 +406,13 @@ export class ProceduralTextures {
       }
     }
 
-    const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat, THREE.FloatType);
+    const texture = new THREE.DataTexture(
+      data,
+      size,
+      size,
+      THREE.RGBAFormat,
+      THREE.FloatType,
+    );
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
@@ -393,7 +420,7 @@ export class ProceduralTextures {
     texture.generateMipmaps = true;
     texture.colorSpace = THREE.LinearSRGBColorSpace;
     texture.needsUpdate = true;
-    texture.name = 'ProceduralDanceFloor';
+    texture.name = "ProceduralDanceFloor";
 
     return texture;
   }
@@ -408,46 +435,48 @@ export class ProceduralTextures {
     const data = new Float32Array(size * size * frames * 4);
 
     for (let f = 0; f < frames; f++) {
-      const time = f / frames * Math.PI * 2;
-      
+      const time = (f / frames) * Math.PI * 2;
+
       for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
           const ux = x / size;
           const uy = y / size;
-          
+
           // Multiple moving lights
           let emission = 0;
-          
+
           // Circular moving lights
           for (let i = 0; i < 8; i++) {
-            const angle = time + i * Math.PI / 4;
+            const angle = time + (i * Math.PI) / 4;
             const radius = 0.3 + 0.2 * Math.sin(time * 2 + i);
             const lx = 0.5 + radius * Math.cos(angle);
             const ly = 0.5 + radius * Math.sin(angle);
-            
+
             const dx = ux - lx;
             const dy = uy - ly;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            emission += Math.exp(-dist * 30) * (0.5 + 0.5 * Math.sin(time * 5 + i));
+
+            emission +=
+              Math.exp(-dist * 30) * (0.5 + 0.5 * Math.sin(time * 5 + i));
           }
-          
+
           // Pulsing center
           const cx = ux - 0.5;
           const cy = uy - 0.5;
           const centerDist = Math.sqrt(cx * cx + cy * cy);
-          emission += Math.exp(-centerDist * 20) * (0.5 + 0.5 * Math.sin(time * 3));
-          
+          emission +=
+            Math.exp(-centerDist * 20) * (0.5 + 0.5 * Math.sin(time * 3));
+
           // Strobe effects
           if (Math.sin(time * 20) > 0.9) {
             emission += 2.0;
           }
 
           const idx = ((f * size + y) * size + x) * 4;
-          data[idx] = emission;     // R - emission intensity
-          data[idx + 1] = emission; // G 
+          data[idx] = emission; // R - emission intensity
+          data[idx + 1] = emission; // G
           data[idx + 2] = emission; // B
-          data[idx + 3] = 1.0;      // A
+          data[idx + 3] = 1.0; // A
         }
       }
     }
@@ -459,7 +488,7 @@ export class ProceduralTextures {
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.needsUpdate = true;
-    texture.name = 'ProceduralAnimatedLights';
+    texture.name = "ProceduralAnimatedLights";
 
     return texture;
   }
@@ -479,7 +508,7 @@ export class ProceduralTextures {
       heightScale = 1.0,
       ridgeFactor = 0.8,
       valleyDepth = 0.2,
-      seed = Math.random() * 10000
+      seed = Math.random() * 10000,
     } = options;
 
     const data = new Float32Array(size * size);
@@ -495,12 +524,12 @@ export class ProceduralTextures {
         for (let o = 0; o < octaves; o++) {
           const nx = x * frequency;
           const ny = y * frequency;
-          
+
           // Ridged multifractal for mountain ridges
           const n = this._perlin2D(nx, ny, prng);
           const ridged = Math.abs(n);
           value += (1.0 - ridged) * amplitude * ridgeFactor;
-          
+
           maxValue += amplitude;
           amplitude *= persistence;
           frequency *= lacunarity;
@@ -519,14 +548,20 @@ export class ProceduralTextures {
       }
     }
 
-    const texture = new THREE.DataTexture(data, size, size, THREE.RedFormat, THREE.FloatType);
+    const texture = new THREE.DataTexture(
+      data,
+      size,
+      size,
+      THREE.RedFormat,
+      THREE.FloatType,
+    );
     texture.wrapS = THREE.ClampToEdgeWrapping;
     texture.wrapT = THREE.ClampToEdgeWrapping;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.generateMipmaps = true;
     texture.needsUpdate = true;
-    texture.name = 'ProceduralMountainHeightmap';
+    texture.name = "ProceduralMountainHeightmap";
 
     return texture;
   }
@@ -545,7 +580,7 @@ export class ProceduralTextures {
       snowColor = [0.95, 0.95, 0.98],
       snowLine = 0.7,
       snowTransition = 0.1,
-      seed = Math.random() * 10000
+      seed = Math.random() * 10000,
     } = options;
 
     const data = new Float32Array(size * size * 4);
@@ -556,20 +591,23 @@ export class ProceduralTextures {
         // Generate noise for variation
         const noise = this._perlin2D(x * 0.01, y * 0.01, prng);
         const noise2 = this._perlin2D(x * 0.05, y * 0.05, prng);
-        
+
         // Simulate height from noise
         const height = (noise + 1) * 0.5;
-        
+
         // Base color with variation
         const variation = (noise2 + 1) * 0.5 * 0.1 - 0.05;
-        
+
         let r = baseColor[0] + variation;
         let g = baseColor[1] + variation;
         let b = baseColor[2] + variation;
 
         // Snow blend
         if (height > snowLine - snowTransition) {
-          const t = Math.min(1, (height - (snowLine - snowTransition)) / snowTransition);
+          const t = Math.min(
+            1,
+            (height - (snowLine - snowTransition)) / snowTransition,
+          );
           r = THREE.MathUtils.lerp(r, snowColor[0], t);
           g = THREE.MathUtils.lerp(g, snowColor[1], t);
           b = THREE.MathUtils.lerp(b, snowColor[2], t);
@@ -595,7 +633,13 @@ export class ProceduralTextures {
       }
     }
 
-    const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat, THREE.FloatType);
+    const texture = new THREE.DataTexture(
+      data,
+      size,
+      size,
+      THREE.RGBAFormat,
+      THREE.FloatType,
+    );
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
@@ -603,7 +647,7 @@ export class ProceduralTextures {
     texture.generateMipmaps = true;
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.needsUpdate = true;
-    texture.name = 'ProceduralMountainColor';
+    texture.name = "ProceduralMountainColor";
 
     return texture;
   }
@@ -622,17 +666,17 @@ export class ProceduralTextures {
       groundColor = [0.2, 0.25, 0.3],
       sunPosition = 0.5, // 0-1 horizontal position
       sunSize = 0.1,
-      sunIntensity = 2.0
+      sunIntensity = 2.0,
     } = options;
 
     const data = new Float32Array(width * height * 4);
 
     for (let y = 0; y < height; y++) {
       const v = y / (height - 1); // 0 at top (zenith), 1 at bottom (horizon)
-      
+
       for (let x = 0; x < width; x++) {
         const u = x / (width - 1);
-        
+
         // Base gradient
         const t = Math.pow(v, 0.7); // Non-linear for more natural look
         let r = THREE.MathUtils.lerp(zenithColor[0], horizonColor[0], t);
@@ -645,7 +689,7 @@ export class ProceduralTextures {
         const du = u - sunU;
         const dv = v - sunV;
         const sunDist = Math.sqrt(du * du * 4 + dv * dv); // Elliptical
-        
+
         if (sunDist < sunSize) {
           const intensity = Math.pow(1 - sunDist / sunSize, 4) * sunIntensity;
           r += intensity * 1.0;
@@ -669,14 +713,20 @@ export class ProceduralTextures {
       }
     }
 
-    const texture = new THREE.DataTexture(data, width, height, THREE.RGBAFormat, THREE.FloatType);
+    const texture = new THREE.DataTexture(
+      data,
+      width,
+      height,
+      THREE.RGBAFormat,
+      THREE.FloatType,
+    );
     texture.wrapS = THREE.ClampToEdgeWrapping;
     texture.wrapT = THREE.ClampToEdgeWrapping;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.needsUpdate = true;
-    texture.name = 'ProceduralSkyGradient';
+    texture.name = "ProceduralSkyGradient";
 
     return texture;
   }
@@ -707,7 +757,11 @@ export class ProceduralTextures {
     const grad01 = this._grad2D(p[A + 1], x, y - 1);
     const grad11 = this._grad2D(p[B + 1], x - 1, y - 1);
 
-    return this._lerp(this._lerp(grad00, grad10, u), this._lerp(grad01, grad11, u), v);
+    return this._lerp(
+      this._lerp(grad00, grad10, u),
+      this._lerp(grad01, grad11, u),
+      v,
+    );
   }
 
   /**
@@ -739,34 +793,54 @@ export class ProceduralTextures {
 
     return this._lerp(
       this._lerp(
-        this._lerp(this._grad3D(p[AA], x, y, z), this._grad3D(p[BA], x - 1, y, z), u),
-        this._lerp(this._grad3D(p[AB], x, y - 1, z), this._grad3D(p[BB], x - 1, y - 1, z), u),
-        v
+        this._lerp(
+          this._grad3D(p[AA], x, y, z),
+          this._grad3D(p[BA], x - 1, y, z),
+          u,
+        ),
+        this._lerp(
+          this._grad3D(p[AB], x, y - 1, z),
+          this._grad3D(p[BB], x - 1, y - 1, z),
+          u,
+        ),
+        v,
       ),
       this._lerp(
-        this._lerp(this._grad3D(p[AA + 1], x, y, z - 1), this._grad3D(p[BA + 1], x - 1, y, z - 1), u),
-        this._lerp(this._grad3D(p[AB + 1], x, y - 1, z - 1), this._grad3D(p[BB + 1], x - 1, y - 1, z - 1), u),
-        v
+        this._lerp(
+          this._grad3D(p[AA + 1], x, y, z - 1),
+          this._grad3D(p[BA + 1], x - 1, y, z - 1),
+          u,
+        ),
+        this._lerp(
+          this._grad3D(p[AB + 1], x, y - 1, z - 1),
+          this._grad3D(p[BB + 1], x - 1, y - 1, z - 1),
+          u,
+        ),
+        v,
       ),
-      w
+      w,
     );
   }
 
-  static _fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-  static _lerp(a, b, t) { return a + t * (b - a); }
+  static _fade(t) {
+    return t * t * t * (t * (t * 6 - 15) + 10);
+  }
+  static _lerp(a, b, t) {
+    return a + t * (b - a);
+  }
 
   static _grad2D(hash, x, y) {
     const h = hash & 7;
     const u = h < 4 ? x : y;
     const v = h < 4 ? y : x;
-    return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
+    return (h & 1 ? -u : u) + (h & 2 ? -v : v);
   }
 
   static _grad3D(hash, x, y, z) {
     const h = hash & 15;
     const u = h < 8 ? x : y;
-    const v = h < 4 ? y : (h === 12 || h === 14 ? x : z);
-    return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
+    const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+    return (h & 1 ? -u : u) + (h & 2 ? -v : v);
   }
 
   static _hash(a, b) {
@@ -774,7 +848,7 @@ export class ProceduralTextures {
   }
 
   static _hashSingle(x) {
-    x = (x ^ 61) ^ (x >>> 16);
+    x = x ^ 61 ^ (x >>> 16);
     x = x + (x << 3);
     x = x ^ (x >>> 4);
     x = x * 0x27d4eb2d;
@@ -793,19 +867,19 @@ export class ProceduralTextures {
   static _generatePermutation(prng) {
     const p = new Array(512);
     const perm = new Array(256);
-    
+
     for (let i = 0; i < 256; i++) perm[i] = i;
-    
+
     // Fisher-Yates shuffle
     for (let i = 255; i > 0; i--) {
       const j = Math.floor(prng() * (i + 1));
       [perm[i], perm[j]] = [perm[j], perm[i]];
     }
-    
+
     for (let i = 0; i < 512; i++) {
       p[i] = perm[i & 255];
     }
-    
+
     return p;
   }
 }

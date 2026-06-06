@@ -8,9 +8,6 @@ dist/
 build/
 *.local
 
-# Vite
-.vite/
-
 # Environment files
 .env
 .env.local

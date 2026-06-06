@@ -1,9 +1,9 @@
 /**
  * MobileDetector - Device Capability Detection
- * 
+ *
  * Detects mobile devices, GPU capabilities, and provides
  * quality recommendations for rendering settings.
- * 
+ *
  * @module utils/MobileDetector
  * @version 1.0.0
  */
@@ -33,14 +33,15 @@ export class MobileDetector {
       supportsFloatTextures: false,
       supportsHalfFloatTextures: false,
       supportsDepthTexture: false,
-      quality: 'high',
-      recommendedSettings: {}
+      quality: "high",
+      recommendedSettings: {},
     };
 
     // Check for mobile/tablet
-    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+    const mobileRegex =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
     const tabletRegex = /iPad|Android(?!.*Mobile)/i;
-    
+
     info.isMobile = mobileRegex.test(info.userAgent);
     info.isTablet = tabletRegex.test(info.userAgent);
     info.isDesktop = !info.isMobile && !info.isTablet;
@@ -51,7 +52,7 @@ export class MobileDetector {
         effectiveType: navigator.connection.effectiveType,
         downlink: navigator.connection.downlink,
         rtt: navigator.connection.rtt,
-        saveData: navigator.connection.saveData
+        saveData: navigator.connection.saveData,
       };
     }
 
@@ -59,21 +60,23 @@ export class MobileDetector {
     info.webgpu = !!navigator.gpu;
 
     // WebGL2 support and capabilities
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
     if (gl) {
-      info.webgl2 = !!canvas.getContext('webgl2');
+      info.webgl2 = !!canvas.getContext("webgl2");
       info.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-      info.supportsFloatTextures = !!gl.getExtension('OES_texture_float');
-      info.supportsHalfFloatTextures = !!gl.getExtension('OES_texture_half_float');
-      info.supportsDepthTexture = !!gl.getExtension('WEBGL_depth_texture');
-      
+      info.supportsFloatTextures = !!gl.getExtension("OES_texture_float");
+      info.supportsHalfFloatTextures = !!gl.getExtension(
+        "OES_texture_half_float",
+      );
+      info.supportsDepthTexture = !!gl.getExtension("WEBGL_depth_texture");
+
       // GPU info
-      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
       if (debugInfo) {
         info.gpu = {
           vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
-          renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+          renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL),
         };
       }
     }
@@ -81,7 +84,7 @@ export class MobileDetector {
 
     // Determine quality tier
     info.quality = this._determineQuality(info);
-    
+
     // Generate recommended settings
     info.recommendedSettings = this._getRecommendedSettings(info);
 
@@ -109,25 +112,45 @@ export class MobileDetector {
     if (info.gpu) {
       const renderer = info.gpu.renderer.toLowerCase();
       // High-end desktop GPUs
-      if (renderer.includes('rtx') || renderer.includes('rx 6') || renderer.includes('rx 7') ||
-          renderer.includes('radeon') && (renderer.includes('6800') || renderer.includes('6900') || renderer.includes('7900'))) {
+      if (
+        renderer.includes("rtx") ||
+        renderer.includes("rx 6") ||
+        renderer.includes("rx 7") ||
+        (renderer.includes("radeon") &&
+          (renderer.includes("6800") ||
+            renderer.includes("6900") ||
+            renderer.includes("7900")))
+      ) {
         score += 4;
       }
       // Mid-range desktop GPUs
-      else if (renderer.includes('gtx 16') || renderer.includes('rtx 30') || renderer.includes('rx 5') || renderer.includes('rx 66')) {
+      else if (
+        renderer.includes("gtx 16") ||
+        renderer.includes("rtx 30") ||
+        renderer.includes("rx 5") ||
+        renderer.includes("rx 66")
+      ) {
         score += 3;
       }
       // Integrated/entry desktop
-      else if (renderer.includes('intel') || renderer.includes('uhd') || renderer.includes('iris') ||
-               renderer.includes('vega') && !renderer.includes('rx')) {
+      else if (
+        renderer.includes("intel") ||
+        renderer.includes("uhd") ||
+        renderer.includes("iris") ||
+        (renderer.includes("vega") && !renderer.includes("rx"))
+      ) {
         score += 2;
       }
       // Mobile GPUs
-      else if (renderer.includes('adreno') || renderer.includes('mali') || renderer.includes('apple') ||
-               renderer.includes('powervr') || renderer.includes('videocore')) {
+      else if (
+        renderer.includes("adreno") ||
+        renderer.includes("mali") ||
+        renderer.includes("apple") ||
+        renderer.includes("powervr") ||
+        renderer.includes("videocore")
+      ) {
         score += 1;
-      }
-      else {
+      } else {
         score += 2; // Unknown desktop GPU
       }
     } else {
@@ -136,9 +159,13 @@ export class MobileDetector {
 
     // Connection quality
     if (info.connection) {
-      if (info.connection.effectiveType === '4g' && info.connection.downlink > 10) score += 1;
-      else if (info.connection.effectiveType === '3g') score -= 1;
-      else if (info.connection.effectiveType === '2g') score -= 2;
+      if (
+        info.connection.effectiveType === "4g" &&
+        info.connection.downlink > 10
+      )
+        score += 1;
+      else if (info.connection.effectiveType === "3g") score -= 1;
+      else if (info.connection.effectiveType === "2g") score -= 2;
       if (info.connection.saveData) score -= 1;
     }
 
@@ -151,11 +178,11 @@ export class MobileDetector {
 
     // Clamp and map to quality tier
     score = Math.max(0, Math.min(10, score));
-    
-    if (score >= 8) return 'ultra';
-    if (score >= 6) return 'high';
-    if (score >= 4) return 'medium';
-    return 'low';
+
+    if (score >= 8) return "ultra";
+    if (score >= 6) return "high";
+    if (score >= 4) return "medium";
+    return "low";
   }
 
   /**
@@ -175,7 +202,7 @@ export class MobileDetector {
         toneMappingEnabled: true,
         fxaaEnabled: true,
         particleCount: 10000,
-        lodBias: 0
+        lodBias: 0,
       },
       high: {
         renderScale: 1.0,
@@ -188,7 +215,7 @@ export class MobileDetector {
         toneMappingEnabled: true,
         fxaaEnabled: true,
         particleCount: 5000,
-        lodBias: 0
+        lodBias: 0,
       },
       medium: {
         renderScale: 0.85,
@@ -201,7 +228,7 @@ export class MobileDetector {
         toneMappingEnabled: true,
         fxaaEnabled: true,
         particleCount: 2000,
-        lodBias: 1
+        lodBias: 1,
       },
       low: {
         renderScale: 0.7,
@@ -214,8 +241,8 @@ export class MobileDetector {
         toneMappingEnabled: true,
         fxaaEnabled: true,
         particleCount: 500,
-        lodBias: 2
-      }
+        lodBias: 2,
+      },
     };
 
     return presets[info.quality] || presets.high;
@@ -231,7 +258,7 @@ export class MobileDetector {
       ultra: { renderScale: 1.0, shadowMapSize: 4096, ssrSamples: 32 },
       high: { renderScale: 1.0, shadowMapSize: 2048, ssrSamples: 24 },
       medium: { renderScale: 0.85, shadowMapSize: 1024, ssrSamples: 16 },
-      low: { renderScale: 0.7, shadowMapSize: 512, ssrSamples: 8 }
+      low: { renderScale: 0.7, shadowMapSize: 512, ssrSamples: 8 },
     };
     return presets[quality] || presets.high;
   }
@@ -246,20 +273,20 @@ export class MobileDetector {
     this._cachedInfo = info;
 
     switch (feature) {
-      case 'webgpu':
+      case "webgpu":
         return info.webgpu;
-      case 'webgl2':
+      case "webgl2":
         return info.webgl2;
-      case 'floatTextures':
+      case "floatTextures":
         return info.supportsFloatTextures;
-      case 'halfFloatTextures':
+      case "halfFloatTextures":
         return info.supportsHalfFloatTextures;
-      case 'depthTexture':
+      case "depthTexture":
         return info.supportsDepthTexture;
-      case 'computeShaders':
+      case "computeShaders":
         return info.webgpu; // Only WebGPU has compute shaders
-      case 'sharedArrayBuffer':
-        return typeof SharedArrayBuffer !== 'undefined';
+      case "sharedArrayBuffer":
+        return typeof SharedArrayBuffer !== "undefined";
       default:
         return false;
     }
@@ -270,17 +297,24 @@ export class MobileDetector {
    */
   static logInfo() {
     const info = this.detect();
-    console.group('[MobileDetector] Device Info');
-    console.log('Platform:', info.platform);
-    console.log('Mobile:', info.isMobile, '| Tablet:', info.isTablet, '| Desktop:', info.isDesktop);
-    console.log('CPU Cores:', info.hardwareConcurrency);
-    console.log('Memory:', info.deviceMemory, 'GB');
-    console.log('WebGPU:', info.webgpu);
-    console.log('WebGL2:', info.webgl2);
-    console.log('Max Texture Size:', info.maxTextureSize);
-    console.log('GPU:', info.gpu);
-    console.log('Quality Tier:', info.quality);
-    console.log('Recommended Settings:', info.recommendedSettings);
+    console.group("[MobileDetector] Device Info");
+    console.log("Platform:", info.platform);
+    console.log(
+      "Mobile:",
+      info.isMobile,
+      "| Tablet:",
+      info.isTablet,
+      "| Desktop:",
+      info.isDesktop,
+    );
+    console.log("CPU Cores:", info.hardwareConcurrency);
+    console.log("Memory:", info.deviceMemory, "GB");
+    console.log("WebGPU:", info.webgpu);
+    console.log("WebGL2:", info.webgl2);
+    console.log("Max Texture Size:", info.maxTextureSize);
+    console.log("GPU:", info.gpu);
+    console.log("Quality Tier:", info.quality);
+    console.log("Recommended Settings:", info.recommendedSettings);
     console.groupEnd();
     return info;
   }

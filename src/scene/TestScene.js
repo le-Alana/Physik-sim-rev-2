@@ -1,22 +1,22 @@
 /**
  * TestScene - Rayman-Style Open Air Scene Builder
- * 
+ *
  * Creates a complete test scene with:
  * - Procedural sky with volumetric clouds
  * - Dancing floor with animated lights
  * - Rayman-style mountains surrounding the area
  * - Dynamic lighting setup
- * 
+ *
  * @module scene/TestScene
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
-import { Sky } from './Sky.js';
-import { Ground } from './Ground.js';
-import { Mountains } from './Mountains.js';
-import { Lighting } from './Lighting.js';
-import { ProceduralTextures } from '../utils/ProceduralTextures.js';
+import * as THREE from "three";
+import { Sky } from "./Sky.js";
+import { Ground } from "./Ground.js";
+import { Mountains } from "./Mountains.js";
+import { Lighting } from "./Lighting.js";
+import { ProceduralTextures } from "../utils/ProceduralTextures.js";
 
 /**
  * TestScene configuration options
@@ -36,12 +36,12 @@ export class TestScene {
   constructor(sceneManager, options = {}) {
     this.sceneManager = sceneManager;
     this.options = {
-      quality: 'high',
+      quality: "high",
       enableAnimatedLights: true,
       mountainRange: 300,
       groundSize: 200,
       enableShadows: true,
-      ...options
+      ...options,
     };
 
     /** @type {Sky} */
@@ -55,13 +55,13 @@ export class TestScene {
 
     /** @type {THREE.Group} */
     this.rootGroup = new THREE.Group();
-    this.rootGroup.name = 'TestScene';
+    this.rootGroup.name = "TestScene";
 
     /** @type {Object} */
     this._animationState = {
       time: 0,
       dayCycle: 0,
-      lightPhase: 0
+      lightPhase: 0,
     };
 
     /** @type {Map<string, THREE.Object3D>} */
@@ -73,7 +73,7 @@ export class TestScene {
    * @returns {Promise<void>}
    */
   async build() {
-    console.log('[TestScene] Building Rayman-style scene...');
+    console.log("[TestScene] Building Rayman-style scene...");
 
     // Create all scene components
     await this._createSky();
@@ -82,7 +82,7 @@ export class TestScene {
     await this._createLighting();
 
     // Add root group to scene
-    this.sceneManager.addObject(this.rootGroup, 'testScene');
+    this.sceneManager.addObject(this.rootGroup, "testScene");
 
     // Setup animation callbacks
     this._setupAnimations();
@@ -90,7 +90,7 @@ export class TestScene {
     // Apply quality settings
     this._applyQualitySettings();
 
-    console.log('[TestScene] Scene built successfully');
+    console.log("[TestScene] Scene built successfully");
     this._logStats();
   }
 
@@ -106,12 +106,12 @@ export class TestScene {
       turbidity: 2.0,
       rayleigh: 1.0,
       mieCoefficient: 0.005,
-      mieDirectionalG: 0.8
+      mieDirectionalG: 0.8,
     });
 
     await this.sky.build();
     this.rootGroup.add(this.sky.mesh);
-    this._animatedObjects.set('sky', this.sky);
+    this._animatedObjects.set("sky", this.sky);
   }
 
   /**
@@ -124,13 +124,13 @@ export class TestScene {
       quality: this.options.quality,
       enableAnimatedLights: this.options.enableAnimatedLights,
       tileSize: 8,
-      grooveWidth: 0.3
+      grooveWidth: 0.3,
     });
 
     await this.ground.build();
     this.ground.mesh.position.y = 0;
     this.rootGroup.add(this.ground.mesh);
-    this._animatedObjects.set('ground', this.ground);
+    this._animatedObjects.set("ground", this.ground);
   }
 
   /**
@@ -145,12 +145,12 @@ export class TestScene {
       minHeight: 30,
       maxHeight: 120,
       baseRadius: 80,
-      seed: 12345
+      seed: 12345,
     });
 
     await this.mountains.build();
     this.rootGroup.add(this.mountains.group);
-    this._animatedObjects.set('mountains', this.mountains);
+    this._animatedObjects.set("mountains", this.mountains);
   }
 
   /**
@@ -163,13 +163,13 @@ export class TestScene {
       enableShadows: this.options.enableShadows,
       timeOfDay: 0.3, // Late afternoon
       sunIntensity: 1.5,
-      ambientIntensity: 0.3
+      ambientIntensity: 0.3,
     });
 
     await this.lighting.build();
-    
+
     // Add lights to scene manager
-    this.lighting.lights.forEach(light => {
+    this.lighting.lights.forEach((light) => {
       this.sceneManager.addLight(light);
     });
 
@@ -178,7 +178,7 @@ export class TestScene {
       this.rootGroup.add(this.lighting.sunHelper);
     }
 
-    this._animatedObjects.set('lighting', this.lighting);
+    this._animatedObjects.set("lighting", this.lighting);
   }
 
   /**
@@ -190,7 +190,7 @@ export class TestScene {
       low: 8,
       medium: 16,
       high: 24,
-      ultra: 32
+      ultra: 32,
     };
     return counts[this.options.quality] || 16;
   }
@@ -204,30 +204,34 @@ export class TestScene {
       low: {
         shadowMapSize: 512,
         cloudSamples: 32,
-        mountainDetail: 0.5
+        mountainDetail: 0.5,
       },
       medium: {
         shadowMapSize: 1024,
         cloudSamples: 64,
-        mountainDetail: 0.75
+        mountainDetail: 0.75,
       },
       high: {
         shadowMapSize: 2048,
         cloudSamples: 128,
-        mountainDetail: 1.0
+        mountainDetail: 1.0,
       },
       ultra: {
         shadowMapSize: 4096,
         cloudSamples: 256,
-        mountainDetail: 1.5
-      }
+        mountainDetail: 1.5,
+      },
     };
 
-    const settings = qualitySettings[this.options.quality] || qualitySettings.high;
-    
+    const settings =
+      qualitySettings[this.options.quality] || qualitySettings.high;
+
     // Apply to components
     if (this.lighting && this.lighting.sunLight) {
-      this.lighting.sunLight.shadow.mapSize.set(settings.shadowMapSize, settings.shadowMapSize);
+      this.lighting.sunLight.shadow.mapSize.set(
+        settings.shadowMapSize,
+        settings.shadowMapSize,
+      );
     }
   }
 
@@ -295,17 +299,13 @@ export class TestScene {
   _updateDayCycle() {
     const cycle = this._animationState.dayCycle;
     const angle = cycle * Math.PI * 2;
-    
+
     // Sun position
     const sunDistance = 300;
     const sunHeight = Math.sin(angle) * sunDistance * 0.8;
     const sunHorizontal = Math.cos(angle) * sunDistance;
-    
-    this.sky.setSunPosition(
-      sunHorizontal,
-      Math.max(5, sunHeight),
-      0
-    );
+
+    this.sky.setSunPosition(sunHorizontal, Math.max(5, sunHeight), 0);
 
     // Update lighting to match
     if (this.lighting) {
@@ -324,7 +324,7 @@ export class TestScene {
 
   /**
    * Enable/disable animated lights
-   * @param {boolean} enabled 
+   * @param {boolean} enabled
    */
   setAnimatedLights(enabled) {
     this.options.enableAnimatedLights = enabled;
@@ -340,7 +340,7 @@ export class TestScene {
   setQuality(quality) {
     this.options.quality = quality;
     this._applyQualitySettings();
-    
+
     // Rebuild components if needed
     if (this.sky) this.sky.setQuality(quality);
     if (this.ground) this.ground.setQuality(quality);
@@ -359,10 +359,10 @@ export class TestScene {
         sky: !!this.sky,
         ground: !!this.ground,
         mountains: !!this.mountains,
-        lighting: !!this.lighting
+        lighting: !!this.lighting,
       },
       mountainCount: this.mountains?.mountainCount || 0,
-      animatedObjects: this._animatedObjects.size
+      animatedObjects: this._animatedObjects.size,
     };
   }
 
@@ -372,7 +372,7 @@ export class TestScene {
    */
   _countTriangles() {
     let count = 0;
-    this.rootGroup.traverse(obj => {
+    this.rootGroup.traverse((obj) => {
       if (obj.isMesh && obj.geometry) {
         const index = obj.geometry.index;
         if (index) {
@@ -391,10 +391,10 @@ export class TestScene {
    */
   _logStats() {
     const stats = this.getStats();
-    console.group('[TestScene] Scene Statistics');
-    console.log('Triangles:', stats.triangles.toLocaleString());
-    console.log('Mountains:', stats.mountainCount);
-    console.log('Animated Objects:', stats.animatedObjects);
+    console.group("[TestScene] Scene Statistics");
+    console.log("Triangles:", stats.triangles.toLocaleString());
+    console.log("Mountains:", stats.mountainCount);
+    console.log("Animated Objects:", stats.animatedObjects);
     console.groupEnd();
   }
 
@@ -402,7 +402,7 @@ export class TestScene {
    * Dispose of all scene resources
    */
   dispose() {
-    this._animatedObjects.forEach(obj => {
+    this._animatedObjects.forEach((obj) => {
       if (obj.dispose) obj.dispose();
     });
     this._animatedObjects.clear();
@@ -413,7 +413,7 @@ export class TestScene {
     if (this.lighting) this.lighting.dispose();
 
     this.rootGroup.clear();
-    this.sceneManager.removeObject('testScene');
+    this.sceneManager.removeObject("testScene");
   }
 }
 

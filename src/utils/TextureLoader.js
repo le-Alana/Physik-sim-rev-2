@@ -1,14 +1,14 @@
 /**
  * TextureLoader - Async Texture Loading with Fallbacks
- * 
+ *
  * Provides robust texture loading with automatic format detection,
  * mipmap generation, compression support, and error handling.
- * 
+ *
  * @module utils/TextureLoader
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
 /**
  * Texture loading options
@@ -38,7 +38,7 @@ const DEFAULT_OPTIONS = {
     wrapT: THREE.RepeatWrapping,
     anisotropy: 4,
     colorSpace: THREE.SRGBColorSpace,
-    flipY: false
+    flipY: false,
   },
   normal: {
     generateMipmaps: true,
@@ -48,7 +48,7 @@ const DEFAULT_OPTIONS = {
     wrapT: THREE.RepeatWrapping,
     anisotropy: 4,
     colorSpace: THREE.LinearSRGBColorSpace,
-    flipY: false
+    flipY: false,
   },
   roughness: {
     generateMipmaps: true,
@@ -58,7 +58,7 @@ const DEFAULT_OPTIONS = {
     wrapT: THREE.RepeatWrapping,
     anisotropy: 4,
     colorSpace: THREE.LinearSRGBColorSpace,
-    flipY: false
+    flipY: false,
   },
   metalness: {
     generateMipmaps: true,
@@ -68,7 +68,7 @@ const DEFAULT_OPTIONS = {
     wrapT: THREE.RepeatWrapping,
     anisotropy: 4,
     colorSpace: THREE.LinearSRGBColorSpace,
-    flipY: false
+    flipY: false,
   },
   ao: {
     generateMipmaps: true,
@@ -78,7 +78,7 @@ const DEFAULT_OPTIONS = {
     wrapT: THREE.RepeatWrapping,
     anisotropy: 4,
     colorSpace: THREE.LinearSRGBColorSpace,
-    flipY: false
+    flipY: false,
   },
   displacement: {
     generateMipmaps: true,
@@ -88,7 +88,7 @@ const DEFAULT_OPTIONS = {
     wrapT: THREE.RepeatWrapping,
     anisotropy: 4,
     colorSpace: THREE.LinearSRGBColorSpace,
-    flipY: false
+    flipY: false,
   },
   env: {
     generateMipmaps: true,
@@ -98,7 +98,7 @@ const DEFAULT_OPTIONS = {
     wrapT: THREE.ClampToEdgeWrapping,
     anisotropy: 1,
     colorSpace: THREE.LinearSRGBColorSpace,
-    flipY: false
+    flipY: false,
   },
   default: {
     generateMipmaps: true,
@@ -108,8 +108,8 @@ const DEFAULT_OPTIONS = {
     wrapT: THREE.RepeatWrapping,
     anisotropy: 4,
     colorSpace: THREE.SRGBColorSpace,
-    flipY: false
-  }
+    flipY: false,
+  },
 };
 
 /**
@@ -132,7 +132,7 @@ export class TextureLoader {
    * @param {string} [type='default'] - Texture type for defaults
    * @returns {Promise<THREE.Texture>}
    */
-  async load(url, options = {}, type = 'default') {
+  async load(url, options = {}, type = "default") {
     // Check cache first
     if (this._cache.has(url)) {
       return this._cache.get(url);
@@ -148,8 +148,14 @@ export class TextureLoader {
     const mergedOptions = { ...defaultOpts, ...options };
 
     // Create loading promise with retries
-    const promise = this._loadWithRetry(url, mergedOptions, 0, mergedOptions.maxRetries || 3, mergedOptions.retryDelay || 500);
-    
+    const promise = this._loadWithRetry(
+      url,
+      mergedOptions,
+      0,
+      mergedOptions.maxRetries || 3,
+      mergedOptions.retryDelay || 500,
+    );
+
     this._loadingPromises.set(url, promise);
 
     try {
@@ -180,19 +186,30 @@ export class TextureLoader {
         },
         (error) => {
           if (attempt < maxRetries) {
-            console.warn(`[TextureLoader] Retry ${attempt + 1}/${maxRetries} for ${url}`);
+            console.warn(
+              `[TextureLoader] Retry ${attempt + 1}/${maxRetries} for ${url}`,
+            );
             setTimeout(() => {
-              this._loadWithRetry(url, options, attempt + 1, maxRetries, retryDelay)
+              this._loadWithRetry(
+                url,
+                options,
+                attempt + 1,
+                maxRetries,
+                retryDelay,
+              )
                 .then(resolve)
                 .catch(reject);
             }, retryDelay);
           } else {
-            console.error(`[TextureLoader] Failed to load ${url} after ${maxRetries} retries:`, error);
+            console.error(
+              `[TextureLoader] Failed to load ${url} after ${maxRetries} retries:`,
+              error,
+            );
             // Return fallback texture
             const fallback = this._createFallbackTexture(options.colorSpace);
             resolve(fallback);
           }
-        }
+        },
       );
     });
   }
@@ -218,11 +235,11 @@ export class TextureLoader {
    * @private
    */
   _createFallbackTexture(colorSpace) {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = 4;
     canvas.height = 4;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#cccccc';
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#cccccc";
     ctx.fillRect(0, 0, 4, 4);
 
     const texture = new THREE.CanvasTexture(canvas);
@@ -230,7 +247,7 @@ export class TextureLoader {
     texture.generateMipmaps = false;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
-    texture.name = 'FallbackTexture';
+    texture.name = "FallbackTexture";
     return texture;
   }
 
@@ -241,8 +258,8 @@ export class TextureLoader {
    * @returns {Promise<Object>} Map of name -> texture
    */
   async loadMultiple(urls, options = {}) {
-    const promises = Object.entries(urls).map(([name, url]) => 
-      this.load(url, options, name).then(texture => ({ name, texture }))
+    const promises = Object.entries(urls).map(([name, url]) =>
+      this.load(url, options, name).then((texture) => ({ name, texture })),
     );
 
     const results = await Promise.allSettled(promises);
@@ -250,7 +267,7 @@ export class TextureLoader {
 
     results.forEach((result, index) => {
       const name = Object.keys(urls)[index];
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         textures[name] = result.value.texture;
       } else {
         console.error(`[TextureLoader] Failed to load ${name}:`, result.reason);
@@ -267,25 +284,25 @@ export class TextureLoader {
    * @param {string} [extension='jpg'] - File extension
    * @returns {Promise<Object>} PBR texture set
    */
-  async loadPBRSet(basePath, extension = 'jpg') {
+  async loadPBRSet(basePath, extension = "jpg") {
     const urls = {
       map: `${basePath}_diffuse.${extension}`,
       normalMap: `${basePath}_normal.${extension}`,
       roughnessMap: `${basePath}_roughness.${extension}`,
       metalnessMap: `${basePath}_metalness.${extension}`,
-      aoMap: `${basePath}_ao.${extension}`
+      aoMap: `${basePath}_ao.${extension}`,
     };
 
     const options = {
-      map: { type: 'diffuse' },
-      normalMap: { type: 'normal' },
-      roughnessMap: { type: 'roughness' },
-      metalnessMap: { type: 'metalness' },
-      aoMap: { type: 'ao' }
+      map: { type: "diffuse" },
+      normalMap: { type: "normal" },
+      roughnessMap: { type: "roughness" },
+      metalnessMap: { type: "metalness" },
+      aoMap: { type: "ao" },
     };
 
     const textures = await this.loadMultiple(urls);
-    
+
     // Apply type-specific options
     Object.entries(textures).forEach(([name, texture]) => {
       if (options[name] && options[name].type) {
@@ -311,14 +328,15 @@ export class TextureLoader {
       wrapS: THREE.ClampToEdgeWrapping,
       wrapT: THREE.ClampToEdgeWrapping,
       colorSpace: THREE.LinearSRGBColorSpace,
-      ...options
+      ...options,
     };
 
     if (Array.isArray(urls)) {
       // Cubemap
       return new Promise((resolve, reject) => {
         const loader = new THREE.CubeTextureLoader(this._loader.manager);
-        loader.load(urls,
+        loader.load(
+          urls,
           (cubeTexture) => {
             cubeTexture.generateMipmaps = defaultOpts.generateMipmaps;
             cubeTexture.minFilter = defaultOpts.minFilter;
@@ -330,12 +348,12 @@ export class TextureLoader {
             resolve(cubeTexture);
           },
           undefined,
-          reject
+          reject,
         );
       });
     } else {
       // Equirectangular
-      const texture = await this.load(urls, defaultOpts, 'env');
+      const texture = await this.load(urls, defaultOpts, "env");
       return texture;
     }
   }
@@ -349,7 +367,9 @@ export class TextureLoader {
   async loadCompressed(url, options = {}) {
     // This would require KTX2Loader or BasisTextureLoader
     // For now, fall back to regular texture loading
-    console.warn('[TextureLoader] Compressed texture loading not fully implemented, falling back');
+    console.warn(
+      "[TextureLoader] Compressed texture loading not fully implemented, falling back",
+    );
     return this.load(url, options);
   }
 
@@ -375,7 +395,7 @@ export class TextureLoader {
    * Clear cache
    */
   clearCache() {
-    this._cache.forEach(texture => texture.dispose());
+    this._cache.forEach((texture) => texture.dispose());
     this._cache.clear();
   }
 
@@ -397,7 +417,7 @@ export class TextureLoader {
    * @param {Object} [options] - Load options
    */
   preload(urls, options = {}) {
-    urls.forEach(url => {
+    urls.forEach((url) => {
       if (!this._cache.has(url) && !this._loadingPromises.has(url)) {
         this.load(url, options).catch(() => {}); // Ignore errors during preload
       }
@@ -412,7 +432,7 @@ export class TextureLoader {
     let totalMemory = 0;
     let textureCount = 0;
 
-    this._cache.forEach(texture => {
+    this._cache.forEach((texture) => {
       textureCount++;
       if (texture.image) {
         const w = texture.image.width || 0;
@@ -425,7 +445,7 @@ export class TextureLoader {
     return {
       textureCount,
       estimatedMemoryMB: (totalMemory / 1024 / 1024).toFixed(2),
-      loadingCount: this._loadingPromises.size
+      loadingCount: this._loadingPromises.size,
     };
   }
 }

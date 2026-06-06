@@ -1,6 +1,6 @@
 /**
  * PostProcessing - Full Post-Processing Pipeline
- * 
+ *
  * Manages EffectComposer with multiple passes:
  * - RenderPass (base scene render)
  * - SSRPass (Screen Space Reflections)
@@ -9,22 +9,22 @@
  * - ToneMappingPass (ACES/Reinhard)
  * - FXAAPass (Anti-aliasing)
  * - OutputPass (Final output)
- * 
+ *
  * @module core/PostProcessing
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { CopyShader } from 'three/examples/jsm/shaders/CopyShader.js';
-import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
-import { SSRPass } from './postprocessing/SSRPass.js';
-import { SSAOPass } from './postprocessing/SSAOPass.js';
-import { BloomPass } from './postprocessing/BloomPass.js';
-import { ToneMappingPass } from './postprocessing/ToneMappingPass.js';
+import * as THREE from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+import { CopyShader } from "three/examples/jsm/shaders/CopyShader.js";
+import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
+import { SSRPass } from "./postprocessing/SSRPass.js";
+import { SSAOPass } from "./postprocessing/SSAOPass.js";
+import { BloomPass } from "./postprocessing/BloomPass.js";
+import { ToneMappingPass } from "./postprocessing/ToneMappingPass.js";
 
 /**
  * PostProcessing configuration options
@@ -54,7 +54,7 @@ const QUALITY_PRESETS = {
     ssaoSamples: 8,
     ssaoRadius: 0.5,
     bloomMipLevel: 4,
-    renderScale: 0.75
+    renderScale: 0.75,
   },
   medium: {
     ssrSamples: 16,
@@ -62,7 +62,7 @@ const QUALITY_PRESETS = {
     ssaoSamples: 12,
     ssaoRadius: 0.8,
     bloomMipLevel: 2,
-    renderScale: 0.85
+    renderScale: 0.85,
   },
   high: {
     ssrSamples: 24,
@@ -70,7 +70,7 @@ const QUALITY_PRESETS = {
     ssaoSamples: 16,
     ssaoRadius: 1.0,
     bloomMipLevel: 1,
-    renderScale: 1.0
+    renderScale: 1.0,
   },
   ultra: {
     ssrSamples: 32,
@@ -78,8 +78,8 @@ const QUALITY_PRESETS = {
     ssaoSamples: 32,
     ssaoRadius: 1.5,
     bloomMipLevel: 0,
-    renderScale: 1.0
-  }
+    renderScale: 1.0,
+  },
 };
 
 /**
@@ -103,7 +103,7 @@ export class PostProcessing {
       enableBloom: true,
       enableToneMapping: true,
       enableFXAA: true,
-      quality: 'high',
+      quality: "high",
       bloomStrength: 0.6,
       bloomRadius: 0.4,
       bloomThreshold: 0.85,
@@ -111,7 +111,7 @@ export class PostProcessing {
       ssaoIntensity: 0.5,
       ssrThickness: 0.06,
       ssrSamples: 24,
-      ...options
+      ...options,
     };
 
     /** @type {EffectComposer} */
@@ -134,7 +134,8 @@ export class PostProcessing {
     /** @type {THREE.RenderTarget} */
     this.renderTarget = null;
     /** @type {Object} */
-    this._qualitySettings = QUALITY_PRESETS[this.options.quality] || QUALITY_PRESETS.high;
+    this._qualitySettings =
+      QUALITY_PRESETS[this.options.quality] || QUALITY_PRESETS.high;
 
     /** @type {number} */
     this._time = 0;
@@ -175,19 +176,14 @@ export class PostProcessing {
         thickness: this._qualitySettings.ssrThickness,
         maxDistance: 100,
         samples: this._qualitySettings.ssrSamples,
-        resolutionScale: this._qualitySettings.renderScale
+        resolutionScale: this._qualitySettings.renderScale,
       });
       this.composer.addPass(this.ssrPass);
     }
 
     // 3. SSAO Pass - Screen Space Ambient Occlusion
     if (this.options.enableSSAO) {
-      this.ssaoPass = new SSAOPass(
-        this.scene,
-        this.camera,
-        width,
-        height
-      );
+      this.ssaoPass = new SSAOPass(this.scene, this.camera, width, height);
       this.ssaoPass.kernelRadius = this._qualitySettings.ssaoRadius;
       this.ssaoPass.intensity = this.options.ssaoIntensity;
       this.ssaoPass.samples = this._qualitySettings.ssaoSamples;
@@ -202,7 +198,7 @@ export class PostProcessing {
         threshold: this.options.bloomThreshold,
         mipLevel: this._qualitySettings.bloomMipLevel,
         anamorphic: false,
-        dirtIntensity: 0.0
+        dirtIntensity: 0.0,
       });
       this.bloomPass.setQuality(this.options.quality);
       this.composer.addPass(this.bloomPass);
@@ -213,7 +209,7 @@ export class PostProcessing {
       this.toneMappingPass = new ToneMappingPass({
         exposure: 1.0,
         toneMapping: THREE.ACESFilmicToneMapping,
-        outputColorSpace: THREE.SRGBColorSpace
+        outputColorSpace: THREE.SRGBColorSpace,
       });
       this.composer.addPass(this.toneMappingPass);
     }
@@ -221,7 +217,10 @@ export class PostProcessing {
     // 6. FXAA Pass - Anti-aliasing
     if (this.options.enableFXAA) {
       this.fxaaPass = new ShaderPass(FXAAShader);
-      this.fxaaPass.material.uniforms['resolution'].value.set(1 / width, 1 / height);
+      this.fxaaPass.material.uniforms["resolution"].value.set(
+        1 / width,
+        1 / height,
+      );
       this.composer.addPass(this.fxaaPass);
     }
 
@@ -229,7 +228,10 @@ export class PostProcessing {
     this.outputPass = new OutputPass();
     this.composer.addPass(this.outputPass);
 
-    console.log('[PostProcessing] Pipeline initialized with passes:', this._getPassNames());
+    console.log(
+      "[PostProcessing] Pipeline initialized with passes:",
+      this._getPassNames(),
+    );
   }
 
   /**
@@ -253,10 +255,10 @@ export class PostProcessing {
       magFilter: THREE.LinearFilter,
       wrapS: THREE.ClampToEdgeWrapping,
       wrapT: THREE.ClampToEdgeWrapping,
-      generateMipmaps: false
+      generateMipmaps: false,
     });
 
-    target.texture.name = 'PostProcessing.RenderTarget';
+    target.texture.name = "PostProcessing.RenderTarget";
     return target;
   }
 
@@ -266,13 +268,13 @@ export class PostProcessing {
    * @private
    */
   _getPassNames() {
-    const names = ['RenderPass'];
-    if (this.ssrPass) names.push('SSRPass');
-    if (this.ssaoPass) names.push('SSAOPass');
-    if (this.bloomPass) names.push('BloomPass');
-    if (this.toneMappingPass) names.push('ToneMappingPass');
-    if (this.fxaaPass) names.push('FXAAPass');
-    names.push('OutputPass');
+    const names = ["RenderPass"];
+    if (this.ssrPass) names.push("SSRPass");
+    if (this.ssaoPass) names.push("SSAOPass");
+    if (this.bloomPass) names.push("BloomPass");
+    if (this.toneMappingPass) names.push("ToneMappingPass");
+    if (this.fxaaPass) names.push("FXAAPass");
+    names.push("OutputPass");
     return names;
   }
 
@@ -339,7 +341,10 @@ export class PostProcessing {
 
     // Update FXAA resolution
     if (this.fxaaPass) {
-      this.fxaaPass.material.uniforms['resolution'].value.set(1 / width, 1 / height);
+      this.fxaaPass.material.uniforms["resolution"].value.set(
+        1 / width,
+        1 / height,
+      );
     }
 
     // Update bloom resolution
@@ -357,7 +362,7 @@ export class PostProcessing {
       this.ssaoPass.setSize(width, height);
     }
 
-    console.log('[PostProcessing] Resized to', width, 'x', height);
+    console.log("[PostProcessing] Resized to", width, "x", height);
   }
 
   /**
@@ -366,7 +371,7 @@ export class PostProcessing {
    */
   setQuality(quality) {
     if (!QUALITY_PRESETS[quality]) {
-      console.warn('[PostProcessing] Unknown quality preset:', quality);
+      console.warn("[PostProcessing] Unknown quality preset:", quality);
       return;
     }
 
@@ -395,7 +400,7 @@ export class PostProcessing {
     const height = this.renderer.domElement.height;
     this.setSize(width, height);
 
-    console.log('[PostProcessing] Quality set to:', quality);
+    console.log("[PostProcessing] Quality set to:", quality);
   }
 
   /**
@@ -409,13 +414,17 @@ export class PostProcessing {
       ssao: this.ssaoPass,
       bloom: this.bloomPass,
       toneMapping: this.toneMappingPass,
-      fxaa: this.fxaaPass
+      fxaa: this.fxaaPass,
     };
 
     const pass = passMap[passName.toLowerCase()];
     if (pass) {
       pass.enabled = enabled;
-      console.log('[PostProcessing]', passName, enabled ? 'enabled' : 'disabled');
+      console.log(
+        "[PostProcessing]",
+        passName,
+        enabled ? "enabled" : "disabled",
+      );
     }
   }
 
@@ -425,12 +434,17 @@ export class PostProcessing {
    */
   setBloomParams(params) {
     if (this.bloomPass) {
-      if (params.strength !== undefined) this.bloomPass.strength = params.strength;
+      if (params.strength !== undefined)
+        this.bloomPass.strength = params.strength;
       if (params.radius !== undefined) this.bloomPass.radius = params.radius;
-      if (params.threshold !== undefined) this.bloomPass.threshold = params.threshold;
-      if (params.anamorphic !== undefined) this.bloomPass.setAnamorphic(params.anamorphic);
-      if (params.dirtIntensity !== undefined) this.bloomPass.dirtIntensity = params.dirtIntensity;
-      if (params.colorWeight !== undefined) this.bloomPass.customColorWeight.copy(params.colorWeight);
+      if (params.threshold !== undefined)
+        this.bloomPass.threshold = params.threshold;
+      if (params.anamorphic !== undefined)
+        this.bloomPass.setAnamorphic(params.anamorphic);
+      if (params.dirtIntensity !== undefined)
+        this.bloomPass.dirtIntensity = params.dirtIntensity;
+      if (params.colorWeight !== undefined)
+        this.bloomPass.customColorWeight.copy(params.colorWeight);
     }
   }
 
@@ -440,8 +454,10 @@ export class PostProcessing {
    */
   setSSAOParams(params) {
     if (this.ssaoPass) {
-      if (params.radius !== undefined) this.ssaoPass.kernelRadius = params.radius;
-      if (params.intensity !== undefined) this.ssaoPass.intensity = params.intensity;
+      if (params.radius !== undefined)
+        this.ssaoPass.kernelRadius = params.radius;
+      if (params.intensity !== undefined)
+        this.ssaoPass.intensity = params.intensity;
       if (params.bias !== undefined) this.ssaoPass.bias = params.bias;
     }
   }
@@ -452,8 +468,10 @@ export class PostProcessing {
    */
   setSSRParams(params) {
     if (this.ssrPass) {
-      if (params.thickness !== undefined) this.ssrPass.thickness = params.thickness;
-      if (params.maxDistance !== undefined) this.ssrPass.maxDistance = params.maxDistance;
+      if (params.thickness !== undefined)
+        this.ssrPass.thickness = params.thickness;
+      if (params.maxDistance !== undefined)
+        this.ssrPass.maxDistance = params.maxDistance;
       if (params.samples !== undefined) this.ssrPass.samples = params.samples;
     }
   }
@@ -464,8 +482,10 @@ export class PostProcessing {
    */
   setToneMappingParams(params) {
     if (this.toneMappingPass) {
-      if (params.exposure !== undefined) this.toneMappingPass.exposure = params.exposure;
-      if (params.toneMapping !== undefined) this.toneMappingPass.toneMapping = params.toneMapping;
+      if (params.exposure !== undefined)
+        this.toneMappingPass.exposure = params.exposure;
+      if (params.toneMapping !== undefined)
+        this.toneMappingPass.toneMapping = params.toneMapping;
     }
   }
 
@@ -492,14 +512,21 @@ export class PostProcessing {
     }
 
     // Dispose passes
-    const passes = [this.ssrPass, this.ssaoPass, this.bloomPass, this.toneMappingPass, this.fxaaPass, this.outputPass];
-    passes.forEach(pass => {
+    const passes = [
+      this.ssrPass,
+      this.ssaoPass,
+      this.bloomPass,
+      this.toneMappingPass,
+      this.fxaaPass,
+      this.outputPass,
+    ];
+    passes.forEach((pass) => {
       if (pass && pass.dispose) {
         pass.dispose();
       }
     });
 
-    console.log('[PostProcessing] Disposed');
+    console.log("[PostProcessing] Disposed");
   }
 }
 

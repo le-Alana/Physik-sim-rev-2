@@ -1,18 +1,18 @@
 /**
  * PBRMaterial - Base PBR Material with Wear/Scratches Support
- * 
+ *
  * Extended MeshPhysicalMaterial with procedural wear system:
  * - Scratches that catch highlights
  * - Edge wear
  * - Dust/dirt accumulation
  * - Curvature-based ambient occlusion
  * - Custom clearcoat for layered materials
- * 
+ *
  * @module materials/PBRMaterial
  * @version 1.0.0
  */
 
-import * as THREE from 'three';
+import * as THREE from "three";
 
 /**
  * PBRMaterial configuration options
@@ -46,7 +46,7 @@ export class PBRMaterial extends THREE.MeshPhysicalMaterial {
       curvatureAOIntensity: { value: options.enableCurvatureAO ? 1.0 : 0.0 },
       dustIntensity: { value: 0.1 },
       time: { value: 0 },
-      scratchAnimation: { value: 0 }
+      scratchAnimation: { value: 0 },
     };
 
     super({
@@ -55,10 +55,10 @@ export class PBRMaterial extends THREE.MeshPhysicalMaterial {
       metalness: 0.0,
       clearcoat: 0.0,
       clearcoatRoughness: 0.2,
-      ...options
+      ...options,
     });
 
-    this.name = 'PBRMaterial';
+    this.name = "PBRMaterial";
 
     // Store custom uniforms
     this.customUniforms = customUniforms;
@@ -90,7 +90,7 @@ export class PBRMaterial extends THREE.MeshPhysicalMaterial {
       roughnessMap: THREE.LinearSRGBColorSpace,
       metalnessMap: THREE.LinearSRGBColorSpace,
       aoMap: THREE.LinearSRGBColorSpace,
-      clearcoatMap: THREE.LinearSRGBColorSpace
+      clearcoatMap: THREE.LinearSRGBColorSpace,
     };
 
     Object.entries(textureMap).forEach(([name, colorSpace]) => {
@@ -118,26 +118,26 @@ export class PBRMaterial extends THREE.MeshPhysicalMaterial {
     this.onBeforeCompile = (shader) => {
       // Add custom uniforms
       Object.assign(shader.uniforms, this.customUniforms);
-      
+
       if (this.userData.wearMap) {
         shader.uniforms.wearMap = { value: this.userData.wearMap };
       }
 
       // Vertex: pass world position/normal and view direction
       shader.vertexShader = shader.vertexShader.replace(
-        '#include <common>',
+        "#include <common>",
         `#include <common>
         varying vec3 vWorldPosition;
         varying vec3 vWorldNormal;
-        varying vec3 vViewPosition;`
+        varying vec3 vViewPosition;`,
       );
 
       shader.vertexShader = shader.vertexShader.replace(
-        '#include <begin_vertex>',
+        "#include <begin_vertex>",
         `#include <begin_vertex>
         vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
         vWorldNormal = normalize(normalMatrix * normal);
-        vViewPosition = (viewMatrix * vec4(vWorldPosition, 1.0)).xyz;`
+        vViewPosition = (viewMatrix * vec4(vWorldPosition, 1.0)).xyz;`,
       );
 
       // Fragment: wear system
@@ -223,68 +223,80 @@ export class PBRMaterial extends THREE.MeshPhysicalMaterial {
       `;
 
       shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <common>',
-        wearFragmentHeader
+        "#include <common>",
+        wearFragmentHeader,
       );
 
       // Apply wear to diffuse color
       shader.fragmentShader = shader.fragmentShader.replace(
-        'vec3 diffuseColor = vec3( 1.0 );',
+        "vec3 diffuseColor = vec3( 1.0 );",
         `vec3 diffuseColor = vec3( 1.0 );
-        diffuseColor = applyWear(diffuseColor, vUv, normal, normalize(-vViewPosition));`
+        diffuseColor = applyWear(diffuseColor, vUv, normal, normalize(-vViewPosition));`,
       );
 
       // Add scratch highlights to specular/clearcoat
       shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <clearcoat_fragment>',
+        "#include <clearcoat_fragment>",
         `#include <clearcoat_fragment>
         // Add scratch highlights to clearcoat
         vec3 lightDir = normalize(directionalLights[0].direction);
         vec3 scratchHighlights = getScratchHighlights(vUv, normal, normalize(-vViewPosition), lightDir);
-        clearcoatRadiance += scratchHighlights;`
+        clearcoatRadiance += scratchHighlights;`,
       );
 
       // Add wear to roughness (wear makes surface rougher)
       shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <roughnessmap_fragment>',
+        "#include <roughnessmap_fragment>",
         `#include <roughnessmap_fragment>
         // Wear increases roughness
         vec4 wearData = getWearData(vUv);
-        roughnessFactor = mix(roughnessFactor, min(1.0, roughnessFactor + wearData.r * 0.3), wearIntensity);`
+        roughnessFactor = mix(roughnessFactor, min(1.0, roughnessFactor + wearData.r * 0.3), wearIntensity);`,
       );
     };
   }
 
   /**
    * Set wear intensity
-   * @param {number} intensity 
+   * @param {number} intensity
    */
   setWearIntensity(intensity) {
-    this.customUniforms.wearIntensity.value = THREE.MathUtils.clamp(intensity, 0, 3);
+    this.customUniforms.wearIntensity.value = THREE.MathUtils.clamp(
+      intensity,
+      0,
+      3,
+    );
     this.needsUpdate = true;
   }
 
   /**
    * Set scratch intensity
-   * @param {number} intensity 
+   * @param {number} intensity
    */
   setScratchIntensity(intensity) {
-    this.customUniforms.scratchIntensity.value = THREE.MathUtils.clamp(intensity, 0, 3);
+    this.customUniforms.scratchIntensity.value = THREE.MathUtils.clamp(
+      intensity,
+      0,
+      3,
+    );
     this.needsUpdate = true;
   }
 
   /**
    * Set edge wear intensity
-   * @param {number} intensity 
+   * @param {number} intensity
    */
   setEdgeWearIntensity(intensity) {
-    this.customUniforms.edgeWearIntensity.value = THREE.MathUtils.clamp(intensity, 0, 3);
+    this.customUniforms.edgeWearIntensity.value = THREE.MathUtils.clamp(
+      intensity,
+      0,
+      3,
+    );
     this.needsUpdate = true;
   }
 
   /**
    * Enable/disable curvature AO
-   * @param {boolean} enabled 
+   * @param {boolean} enabled
    */
   setCurvatureAO(enabled) {
     this.customUniforms.curvatureAOIntensity.value = enabled ? 1.0 : 0.0;
@@ -293,16 +305,20 @@ export class PBRMaterial extends THREE.MeshPhysicalMaterial {
 
   /**
    * Set dust intensity
-   * @param {number} intensity 
+   * @param {number} intensity
    */
   setDustIntensity(intensity) {
-    this.customUniforms.dustIntensity.value = THREE.MathUtils.clamp(intensity, 0, 1);
+    this.customUniforms.dustIntensity.value = THREE.MathUtils.clamp(
+      intensity,
+      0,
+      1,
+    );
     this.needsUpdate = true;
   }
 
   /**
    * Update time for animation
-   * @param {number} time 
+   * @param {number} time
    */
   updateTime(time) {
     this.customUniforms.time.value = time;
