@@ -20,7 +20,7 @@ import * as THREE from "three";
  * @property {THREE.Texture} map - Base color/dance floor pattern texture
  * @property {THREE.Texture} normalMap - Normal map for tile grooves
  * @property {THREE.Texture} wearMap - Wear/scratch texture
- * @property {THREE.DataTexture3D} animatedLightsMap - 3D texture for animated lights
+ * @property {THREE.Data3DTexture} animatedLightsMap - 3D texture for animated lights
  * @property {number} roughness - Base roughness
  * @property {number} metalness - Base metalness
  * @property {number} clearcoat - Clearcoat intensity

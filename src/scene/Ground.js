@@ -48,7 +48,7 @@ export class Ground {
     this.mesh = null;
     /** @type {GroundMaterial} */
     this.material = null;
-    /** @type {THREE.DataTexture3D} */
+    /** @type {THREE.Data3DTexture} */
     this.animatedLightsTexture = null;
 
     /** @type {Object} */

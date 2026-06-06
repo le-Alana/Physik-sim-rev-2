@@ -68,7 +68,7 @@ export class ProceduralTextures {
    * Generate 3D noise texture (for volumetric effects)
    * @param {number} size - Texture size
    * @param {Object} options - Noise options
-   * @returns {THREE.DataTexture3D}
+   * @returns {THREE.Data3DTexture}
    */
   static generateNoise3D(size = 64, options = {}) {
     const {
@@ -104,7 +104,7 @@ export class ProceduralTextures {
       }
     }
 
-    const texture = new THREE.DataTexture3D(data, size, size, size);
+    const texture = new THREE.Data3DTexture(data, size, size, size);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.wrapR = THREE.RepeatWrapping;
@@ -299,7 +299,7 @@ export class ProceduralTextures {
    * Generate 3D cloud noise (for volumetric rendering)
    * @param {number} size - Texture size
    * @param {Object} options - Cloud options
-   * @returns {THREE.DataTexture3D}
+   * @returns {THREE.Data3DTexture}
    */
   static generateCloudNoise3D(size = 64, options = {}) {
     const {
@@ -336,7 +336,7 @@ export class ProceduralTextures {
       }
     }
 
-    const texture = new THREE.DataTexture3D(data, size, size, size);
+    const texture = new THREE.Data3DTexture(data, size, size, size);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.wrapR = THREE.RepeatWrapping;
@@ -429,7 +429,7 @@ export class ProceduralTextures {
    * Generate animated light texture for dance floor
    * @param {number} size - Texture size
    * @param {number} frames - Number of animation frames
-   * @returns {THREE.DataTexture3D}
+   * @returns {THREE.Data3DTexture}
    */
   static generateAnimatedLights(size = 256, frames = 32) {
     const data = new Float32Array(size * size * frames * 4);
@@ -481,7 +481,7 @@ export class ProceduralTextures {
       }
     }
 
-    const texture = new THREE.DataTexture3D(data, size, size, frames);
+    const texture = new THREE.Data3DTexture(data, size, size, frames);
     texture.wrapS = THREE.ClampToEdgeWrapping;
     texture.wrapT = THREE.ClampToEdgeWrapping;
     texture.wrapR = THREE.ClampToEdgeWrapping;

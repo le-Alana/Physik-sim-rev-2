@@ -9,7 +9,7 @@
  */
 
 import * as THREE from "three";
-import { Pass } from "three/examples/jsm/postprocessing/Pass.js";
+import { Pass, FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 
 /**
@@ -221,7 +221,7 @@ export class ToneMappingPass extends Pass {
 
     // Internal
     this._shaderPass = null;
-    this._fsQuad = new THREE.FullScreenQuad(null);
+    this._fsQuad = new FullScreenQuad(null);
 
     this._init();
   }

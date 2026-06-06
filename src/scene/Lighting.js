@@ -274,13 +274,15 @@ export class Lighting {
     const sunHeight = Math.sin(angle) * sunDistance * 0.8;
     const sunHorizontal = Math.cos(angle) * sunDistance;
 
+    // Calculate sun height
+    const heightFactor = Math.max(0, Math.sin(angle));
+
     // Update sun position
     if (this.sunLight) {
       this.sunLight.position.set(sunHorizontal, Math.max(10, sunHeight), 0);
       this.sunLight.target.position.set(0, 0, 0);
 
       // Intensity based on sun height
-      const heightFactor = Math.max(0, Math.sin(angle));
       this.sunLight.intensity = this.options.sunIntensity * heightFactor;
       this.sunLight.color.setHSL(
         0.1,

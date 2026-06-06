@@ -9,7 +9,7 @@
  */
 
 import * as THREE from "three";
-import { Pass } from "three/examples/jsm/postprocessing/Pass.js";
+import { Pass, FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
 
 /**
  * SSR Shader - Handles screen-space reflection calculation
@@ -292,7 +292,7 @@ export class SSRPass extends Pass {
     this._copyMaterial = null;
 
     // Mesh for full-screen quad
-    this._fsQuad = new THREE.FullScreenQuad(null);
+    this._fsQuad = new FullScreenQuad(null);
 
     this._init();
   }

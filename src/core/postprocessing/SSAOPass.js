@@ -9,7 +9,7 @@
  */
 
 import * as THREE from "three";
-import { Pass } from "three/examples/jsm/postprocessing/Pass.js";
+import { Pass, FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
 
 /**
  * SSAO Shader - Multi-scale ambient occlusion
@@ -351,7 +351,7 @@ export class SSAOPass extends Pass {
     this._copyMaterial = null;
 
     // Full-screen quad
-    this._fsQuad = new THREE.FullScreenQuad(null);
+    this._fsQuad = new FullScreenQuad(null);
 
     // Noise texture for SSAO
     this._noiseTexture = this._createNoiseTexture();

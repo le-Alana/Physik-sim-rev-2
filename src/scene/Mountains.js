@@ -376,7 +376,7 @@ export class Mountains {
       geometry.name = `Mountain_${index}`;
 
       // Apply custom vertex displacement for more natural shape
-      this._displaceVertices(geometry, data);
+      this._displaceVertices(geometry, data, index);
 
       // Compute normals and tangents
       geometry.computeVertexNormals();
@@ -408,7 +408,7 @@ export class Mountains {
    * Displace vertices for natural mountain shape
    * @private
    */
-  _displaceVertices(geometry, data) {
+  _displaceVertices(geometry, data, index = 0) {
     const position = geometry.attributes.position;
     const prng = this._createPRNG(this.options.seed + index * 100);
 
