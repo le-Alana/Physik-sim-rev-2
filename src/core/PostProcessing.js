@@ -17,13 +17,13 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { CopyShader } from 'three/examples/jsm/shaders/CopyShader.js';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { SSRPass } from './postprocessing/SSRPass.js';
 import { SSAOPass } from './postprocessing/SSAOPass.js';
+import { BloomPass } from './postprocessing/BloomPass.js';
 import { ToneMappingPass } from './postprocessing/ToneMappingPass.js';
 
 /**
@@ -122,7 +122,7 @@ export class PostProcessing {
     this.ssrPass = null;
     /** @type {SSAOPass|null} */
     this.ssaoPass = null;
-    /** @type {UnrealBloomPass|null} */
+    /** @type {BloomPass|null} */
     this.bloomPass = null;
     /** @type {ToneMappingPass|null} */
     this.toneMappingPass = null;
@@ -194,19 +194,17 @@ export class PostProcessing {
       this.composer.addPass(this.ssaoPass);
     }
 
-    // 4. Bloom Pass - Unreal Bloom
+    // 4. Bloom Pass - Custom Bloom with quality presets
     if (this.options.enableBloom) {
-      this.bloomPass = new UnrealBloomPass(
-        new THREE.Vector2(width, height),
-        this.options.bloomStrength,
-        this.options.bloomRadius,
-        this.options.bloomThreshold
-      );
-      this.bloomPass.threshold = this.options.bloomThreshold;
-      this.bloomPass.strength = this.options.bloomStrength;
-      this.bloomPass.radius = this.options.bloomRadius;
-      // Set mip level based on quality
-      this.bloomPass.mipLevel = this._qualitySettings.bloomMipLevel;
+      this.bloomPass = new BloomPass({
+        strength: this.options.bloomStrength,
+        radius: this.options.bloomRadius,
+        threshold: this.options.bloomThreshold,
+        mipLevel: this._qualitySettings.bloomMipLevel,
+        anamorphic: false,
+        dirtIntensity: 0.0
+      });
+      this.bloomPass.setQuality(this.options.quality);
       this.composer.addPass(this.bloomPass);
     }
 
@@ -389,7 +387,7 @@ export class PostProcessing {
 
     // Update Bloom
     if (this.bloomPass) {
-      this.bloomPass.mipLevel = this._qualitySettings.bloomMipLevel;
+      this.bloomPass.setQuality(quality);
     }
 
     // Recreate render target with new scale
@@ -430,6 +428,9 @@ export class PostProcessing {
       if (params.strength !== undefined) this.bloomPass.strength = params.strength;
       if (params.radius !== undefined) this.bloomPass.radius = params.radius;
       if (params.threshold !== undefined) this.bloomPass.threshold = params.threshold;
+      if (params.anamorphic !== undefined) this.bloomPass.setAnamorphic(params.anamorphic);
+      if (params.dirtIntensity !== undefined) this.bloomPass.dirtIntensity = params.dirtIntensity;
+      if (params.colorWeight !== undefined) this.bloomPass.customColorWeight.copy(params.colorWeight);
     }
   }
 
