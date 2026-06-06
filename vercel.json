@@ -1,11 +1,15 @@
 {
   "name": "physik-sim-webgpu",
   "framework": null,
-  "buildCommand": "echo 'No build step required - uses native ES modules'",
+  "buildCommand": "cp -r node_modules/three vendor/three",
   "devCommand": "npx serve . -l 5173",
   "installCommand": "npm install",
   "outputDirectory": ".",
   "rewrites": [
+    {
+      "source": "/node_modules/three/(.*)",
+      "destination": "/vendor/three/$1"
+    },
     {
       "source": "/(.*)",
       "destination": "/$1"
@@ -27,19 +31,6 @@
         {
           "key": "Content-Type",
           "value": "application/javascript; charset=utf-8"
-        }
-      ]
-    },
-    {
-      "source": "/node_modules/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Cross-Origin-Resource-Policy",
-          "value": "cross-origin"
         }
       ]
     },
