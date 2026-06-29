@@ -1,7 +1,7 @@
 {
   "name": "physik-sim-webgpu",
   "version": "1.0.0",
-  "description": "Ultra-realistic WebGPU 3D rendering engine with Three.js r184 - Rayman-style test scene with volumetric clouds, PBR materials with wear, screen-space reflections, and full post-processing pipeline",
+  "description": "",
   "type": "module",
   "scripts": {
     "dev": "npx serve . -l 5173",
@@ -23,15 +23,15 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "three": "0.184.0"
+    "three": "0.185.0"
   },
   "devDependencies": {
-    "eslint": "10.5.0",
-    "prettier": "3.8.4",
+    "eslint": "10.6.0",
+    "prettier": "3.9.3",
     "serve": "^14.2.6"
   },
   "engines": {
-    "node": ">=24.17.0"
+    "node": ">=24.18.0"
   },
   "browserslist": [
     "last 2 Chrome versions",
