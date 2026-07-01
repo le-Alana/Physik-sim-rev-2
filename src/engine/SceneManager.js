@@ -50,9 +50,27 @@ export default class SceneManager {
 		this.controls.minDistance = 6;
 		this.controls.maxDistance = 80;
 		this.controls.maxPolarAngle = Math.PI * 0.95;
+		this.controls.enableKeys = false;
+		this.controls.touches = {
+			ONE: 1,
+			TWO: 2,
+			THREE: 2,
+		};
 		this.controls.update();
 		if ( canvas ) {
 			canvas.style.touchAction = 'none';
+			canvas.setAttribute( 'data-touch-enabled', 'true' );
+		}
+
+		this._touchState = null;
+		this._onTouchStart = this._onTouchStart.bind( this );
+		this._onTouchMove = this._onTouchMove.bind( this );
+		this._onTouchEnd = this._onTouchEnd.bind( this );
+		if ( canvas ) {
+			canvas.addEventListener( 'touchstart', this._onTouchStart, { passive: false } );
+			canvas.addEventListener( 'touchmove', this._onTouchMove, { passive: false } );
+			canvas.addEventListener( 'touchend', this._onTouchEnd );
+			canvas.addEventListener( 'touchcancel', this._onTouchEnd );
 		}
 
 		// ── Fog ─────────────────────────────────────────────────────
@@ -74,5 +92,34 @@ export default class SceneManager {
 	updateAspect( width, height ) {
 		this.camera.aspect = width / height;
 		this.camera.updateProjectionMatrix();
+	}
+
+	_onTouchStart( event ) {
+		if ( event.touches.length === 1 ) {
+			this._touchState = {
+				active: true,
+				startX: event.touches[ 0 ].clientX,
+				startY: event.touches[ 0 ].clientY,
+				lastX: event.touches[ 0 ].clientX,
+				lastY: event.touches[ 0 ].clientY,
+			};
+		}
+	}
+
+	_onTouchMove( event ) {
+		if ( !this._touchState || event.touches.length !== 1 ) return;
+		const touch = event.touches[ 0 ];
+		const deltaX = touch.clientX - this._touchState.lastX;
+		const deltaY = touch.clientY - this._touchState.lastY;
+		this._touchState.lastX = touch.clientX;
+		this._touchState.lastY = touch.clientY;
+		if ( Math.abs( deltaX ) < 0.5 && Math.abs( deltaY ) < 0.5 ) return;
+		this.controls.rotateLeft( -deltaX * 0.005 );
+		this.controls.rotateUp( -deltaY * 0.005 );
+		event.preventDefault();
+	}
+
+	_onTouchEnd() {
+		this._touchState = null;
 	}
 }
