@@ -85,7 +85,8 @@ import { Timer, PCFSoftShadowMap } from 'three';
 		// Update animated lights
 		animatedLights.update( elapsed );
 
-		// Render the scene
+		// Update camera controls and render the scene
+		sceneManager.controls.update();
 		engine.renderer.render( sceneManager.scene, sceneManager.camera );
 
 		requestAnimationFrame( animate );

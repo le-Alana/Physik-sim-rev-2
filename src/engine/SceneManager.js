@@ -8,6 +8,7 @@
  */
 
 import { Scene, PerspectiveCamera, FogExp2, Color } from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 /**
  * Rayman-style pastel fog colour (warm peach).
@@ -37,6 +38,22 @@ export default class SceneManager {
 		this.camera = new PerspectiveCamera( fov, aspect, near, far );
 		this.camera.position.set( 12, 8, 18 );
 		this.camera.lookAt( 0, 0, 0 );
+
+		const canvas = document.getElementById( 'renderCanvas' );
+		this.controls = new OrbitControls( this.camera, canvas );
+		this.controls.enableDamping = true;
+		this.controls.dampingFactor = 0.08;
+		this.controls.enablePan = true;
+		this.controls.enableZoom = true;
+		this.controls.enableRotate = true;
+		this.controls.target.set( 0, 2, 0 );
+		this.controls.minDistance = 6;
+		this.controls.maxDistance = 80;
+		this.controls.maxPolarAngle = Math.PI * 0.95;
+		this.controls.update();
+		if ( canvas ) {
+			canvas.style.touchAction = 'none';
+		}
 
 		// ── Fog ─────────────────────────────────────────────────────
 		// Exponential fog blends distant objects into the sky colour.
