@@ -21,13 +21,13 @@ export function createSky( scene ) {
 
 	// ── Gradient sky dome ──────────────────────────────────────────
 	// Large inverted sphere with a node-based gradient colour
-	const skyGeo = new SphereGeometry( 150, 32, 24 );
+	const skyGeo = new SphereGeometry( 500, 32, 24 );
 	const skyMat = new MeshBasicNodeMaterial( { side: BackSide } );
 
 	// TSL gradient: warm peach at horizon → light blue at zenith
 	const skyGradient = Fn( () => {
 
-		const h = positionWorld.y.add( 150 ).div( 300 ); // normalise height
+		const h = positionWorld.y.add( 500 ).div( 1000 ); // normalise height for radius 500
 		const horizonColor = vec3( 1.0, 0.8, 0.6 );      // warm peach
 		const zenithColor = vec3( 0.6, 0.85, 1.0 );      // light blue
 
@@ -42,6 +42,8 @@ export function createSky( scene ) {
 	skyMat.colorNode = skyGradient();
 	const sky = new Mesh( skyGeo, skyMat );
 	sky.name = 'SkyDome';
+	sky.renderOrder = -1; // render behind everything
+	sky.material.depthWrite = false; // don't write to depth buffer
 	scene.add( sky );
 
 	// ── Sun disc ───────────────────────────────────────────────────
