@@ -42,14 +42,15 @@ export function createGround( scene ) {
 
 	} );
 
-	// Blend checkerboard with the base PBR colour
+	// Blend checkerboard with the base PBR colour without creating a self-reference.
+	const baseColorNode = baseMat.colorNode;
 	const groundColor = Fn( () => {
 		const checker = checkerFn();
-		const base = baseMat.colorNode;
-		return mix( checker, base, 0.3 );
+		return mix( checker, baseColorNode, 0.3 );
 	} );
+	const groundColorNode = groundColor();
 
-	baseMat.colorNode = groundColor();
+	baseMat.colorNode = groundColorNode;
 
 	// ── Geometry ───────────────────────────────────────────────────
 	const geo = new PlaneGeometry( 60, 60 );
@@ -62,10 +63,11 @@ export function createGround( scene ) {
 	scene.add( ground );
 
 	// ── Reflective plane overlay ────────────────────────────────────
-	// Use ReflectorNode for mirror-like reflections on the floor
+	// Use ReflectorNode for mirror-like reflections on the floor.
+	// Avoid connecting the reflector to the same node chain that already references itself.
 	const reflector = new ReflectorNode();
 	const reflectorMat = baseMat.clone();
-	reflectorMat.colorNode = mix( reflector, baseMat.colorNode, 0.5 );
+	reflectorMat.colorNode = mix( reflector, groundColorNode, 0.5 );
 
 	const reflectorMesh = new Mesh( geo, reflectorMat );
 	reflectorMesh.rotation.x = -Math.PI / 2;
