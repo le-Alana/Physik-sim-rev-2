@@ -19,7 +19,7 @@ import Engine from './engine/Engine.js';
 import SceneManager from './engine/SceneManager.js';
 import { buildTestScene } from './scene/TestScene.js';
 import { createPostProcessing } from './engine/PostProcessing.js';
-import { Clock, PCFSoftShadowMap } from 'three';
+import { Timer, PCFSoftShadowMap } from 'three';
 
 (async () => {
 
@@ -70,13 +70,14 @@ import { Clock, PCFSoftShadowMap } from 'three';
 	}
 
 	// ── Clock for delta time ───────────────────────────────────────
-	const clock = new Clock();
+	const timer = new Timer();
 
 	// ── Render loop ────────────────────────────────────────────────
 	function animate() {
 
-		const dt = clock.getDelta();
-		const elapsed = clock.getElapsedTime();
+		timer.update();
+		const dt = timer.getDelta();
+		const elapsed = timer.getElapsed();
 
 		// Update player cube
 		cubey.update( dt );

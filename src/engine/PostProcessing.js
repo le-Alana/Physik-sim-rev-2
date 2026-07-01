@@ -69,6 +69,7 @@ export function createPostProcessing( renderer, scene, camera, options = {} ) {
 	// ── Screen Space Reflections ───────────────────────────────────
 	if ( enableSSR ) {
 		const ssrNode = new SSRNode( finalNode, depthNode, normalNode, {
+			camera: camera,
 			reflectNonMetals: true,
 			stochastic: true,
 			binaryRefine: true,

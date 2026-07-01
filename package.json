@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx serve . -l 5173",
-    "build": "mkdir -p dist && cp -r src/* dist/",
+    "build": "echo 'No build step required - uses native ES modules'",
     "preview": "npx serve . -l 5173",
     "lint": "eslint src --ext .js",
     "format": "prettier --write \"src/**/*.js\""
