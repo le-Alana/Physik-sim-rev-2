@@ -7,6 +7,10 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/src/index.html"
+    },
+    {
       "source": "/node_modules/three/(.*)",
       "destination": "/vendor/three/$1"
     },
