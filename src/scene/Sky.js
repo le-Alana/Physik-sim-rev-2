@@ -9,7 +9,8 @@
  * @dependency three/tsl — Fn, vec3, positionWorld, mix, sin, time
  */
 
-import { SphereGeometry, BackSide, Mesh, MeshBasicNodeMaterial, Sprite, SpriteMaterial, AdditiveBlending, CanvasTexture } from 'three';
+import { SphereGeometry, BackSide, Mesh, Sprite, SpriteMaterial, AdditiveBlending, CanvasTexture } from 'three';
+import { MeshBasicNodeMaterial } from 'three/webgpu';
 import { Fn, vec3, positionWorld, mix, sin, time } from 'three/tsl';
 
 /**

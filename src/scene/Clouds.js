@@ -10,7 +10,8 @@
  * @dependency ../shaders/CloudNoiseNode — createCloudNoiseNode
  */
 
-import { PlaneGeometry, Mesh, MeshBasicNodeMaterial, AdditiveBlending, DoubleSide, Group } from 'three';
+import { PlaneGeometry, Mesh, AdditiveBlending, DoubleSide, Group } from 'three';
+import { MeshBasicNodeMaterial } from 'three/webgpu';
 import { Fn, float, vec3, positionWorld, time, mix } from 'three/tsl';
 import { createCloudNoiseNode } from '../shaders/CloudNoiseNode.js';
 

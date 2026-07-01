@@ -14,11 +14,12 @@
  * @dependency three/addons/tsl/display/LensflareNode — lensflare
  */
 
-import { PassNode, output, normalView, mrt, vec4 } from 'three/tsl';
+import { output, normalView, mrt, vec4 } from 'three/tsl';
+import { PassNode } from 'three/webgpu';
 import { HalfFloatType } from 'three';
-import { SSRNode } from 'three/addons/tsl/display/SSRNode.js';
-import { BloomNode } from 'three/addons/tsl/display/BloomNode.js';
-import { GTAONode } from 'three/addons/tsl/display/GTAONode.js';
+import SSRNode from 'three/addons/tsl/display/SSRNode.js';
+import BloomNode from 'three/addons/tsl/display/BloomNode.js';
+import GTAONode from 'three/addons/tsl/display/GTAONode.js';
 
 /**
  * Builds the post-processing pipeline and hooks it into the renderer.

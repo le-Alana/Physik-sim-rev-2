@@ -15,7 +15,8 @@
  * @dependency ../materials/MaterialLibrary — default
  */
 
-import { SphereGeometry, Mesh, Group, MeshPhysicalNodeMaterial } from 'three';
+import { SphereGeometry, Mesh, Group } from 'three';
+import { MeshPhysicalNodeMaterial } from 'three/webgpu';
 import { Fn, vec3, positionLocal, normalLocal, add } from 'three/tsl';
 import { createMountainColorNode } from '../shaders/MountainColorNode.js';
 import materialLib from '../materials/MaterialLibrary.js';

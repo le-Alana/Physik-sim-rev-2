@@ -1,4 +1,7 @@
 {
+  "rewrites": [
+    { "source": "/", "destination": "/src/index.html" }
+  ],
   "headers": [
     {
       "source" : "**/*.@(js|mjs)",

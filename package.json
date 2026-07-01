@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx serve . -l 5173",
-    "build": "echo 'No build step required - uses native ES modules'",
+    "build": "mkdir -p dist && cp -r src/* dist/",
     "preview": "npx serve . -l 5173",
     "lint": "eslint src --ext .js",
     "format": "prettier --write \"src/**/*.js\""
@@ -23,12 +23,12 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "three": "0.185.0"
+    "three": "0.185.1"
   },
   "devDependencies": {
     "eslint": "10.6.0",
     "globals": "^17.7.0",
-    "prettier": "3.9.3",
+    "prettier": "3.9.4",
     "serve": "^14.2.6"
   },
   "engines": {

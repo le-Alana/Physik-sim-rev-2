@@ -13,7 +13,8 @@
  */
 
 import { PlaneGeometry, Mesh } from 'three';
-import { ReflectorNode, Fn, vec2, vec3, uv, time, sin, floor, mix } from 'three/tsl';
+import { Fn, vec2, vec3, uv, time, sin, floor, mix } from 'three/tsl';
+import { ReflectorNode } from 'three/webgpu';
 import materialLib from '../materials/MaterialLibrary.js';
 
 /**

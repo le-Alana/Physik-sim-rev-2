@@ -10,7 +10,8 @@
  * @dependency ../materials/MaterialLibrary — default
  */
 
-import { PlaneGeometry, Mesh, MeshBasicNodeMaterial, Group, ConeGeometry, CylinderGeometry, DoubleSide, AdditiveBlending } from 'three';
+import { PlaneGeometry, Mesh, Group, ConeGeometry, CylinderGeometry, DoubleSide, AdditiveBlending } from 'three';
+import { MeshBasicNodeMaterial } from 'three/webgpu';
 import { Fn, float, vec3, positionLocal, time, sin } from 'three/tsl';
 import materialLib from '../materials/MaterialLibrary.js';
 
