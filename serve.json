@@ -6,35 +6,35 @@
     {
       "source" : "**/*.@(js|mjs)",
       "headers" : [{
-        "key" : "Content-Type",
+        "key" : "content-type",
         "value" : "application/javascript; charset=utf-8"
       }]
     },
     {
       "source" : "**/*.@(glsl)",
       "headers" : [{
-        "key" : "Content-Type",
+        "key" : "content-type",
         "value" : "text/plain; charset=utf-8"
       }]
     },
     {
       "source" : "**/*.@(html)",
       "headers" : [{
-        "key" : "Content-Type",
+        "key" : "content-type",
         "value" : "text/html; charset=utf-8"
       }]
     },
     {
       "source" : "**/*.@(css)",
       "headers" : [{
-        "key" : "Content-Type",
+        "key" : "content-type",
         "value" : "text/css; charset=utf-8"
       }]
     },
     {
       "source" : "**/*.@(json)",
       "headers" : [{
-        "key" : "Content-Type",
+        "key" : "content-type",
         "value" : "application/json; charset=utf-8"
       }]
     },

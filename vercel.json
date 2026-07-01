@@ -24,7 +24,7 @@
       "source": "/(.*)\\.js",
       "headers": [
         {
-          "key": "Content-Type",
+          "key": "content-type",
           "value": "application/javascript; charset=utf-8"
         }
       ]
@@ -33,7 +33,7 @@
       "source": "/(.*)\\.mjs",
       "headers": [
         {
-          "key": "Content-Type",
+          "key": "content-type",
           "value": "application/javascript; charset=utf-8"
         }
       ]
