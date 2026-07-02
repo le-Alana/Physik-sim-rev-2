@@ -7,6 +7,10 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/src/index.html"
+    },
+    {
       "source": "/node_modules/three/(.*)",
       "destination": "/vendor/three/$1"
     },
@@ -20,7 +24,7 @@
       "source": "/(.*)\\.js",
       "headers": [
         {
-          "key": "Content-Type",
+          "key": "content-type",
           "value": "application/javascript; charset=utf-8"
         }
       ]
@@ -29,7 +33,7 @@
       "source": "/(.*)\\.mjs",
       "headers": [
         {
-          "key": "Content-Type",
+          "key": "content-type",
           "value": "application/javascript; charset=utf-8"
         }
       ]
