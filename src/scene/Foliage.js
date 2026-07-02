@@ -278,7 +278,7 @@ export function createFoliage( scene ) {
 
 		blade.position.set(
 			Math.cos( clusterAngle ) * clusterDist + clusterOffset,
-			-1,
+			-1.5,
 			Math.sin( clusterAngle ) * clusterDist + clusterOffset
 		);
 		blade.rotation.y = Math.random() * Math.PI * 2;
@@ -313,7 +313,7 @@ export function createFoliage( scene ) {
 		const dist = 12 + Math.random() * 18;
 		tree.position.set(
 			Math.cos( angle ) * dist,
-			-1,
+			-1.5,
 			Math.sin( angle ) * dist
 		);
 		tree.scale.setScalar( 0.8 + Math.random() * 0.4 );
@@ -329,7 +329,7 @@ export function createFoliage( scene ) {
 		const dist = 6 + Math.random() * 16;
 		shrub.position.set(
 			Math.cos( angle ) * dist,
-			-1,
+			-1.5,
 			Math.sin( angle ) * dist
 		);
 		group.add( shrub );

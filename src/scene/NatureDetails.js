@@ -293,9 +293,9 @@ export function createNatureDetails( scene, options = {} ) {
 
 	// ── Fallen logs ────────────────────────────────────────────────
 	const logPositions = [
-		[ -18, -1.3, -22 ], [ 22, -1.2, -18 ], [ -20, -1.4, 20 ], [ 25, -1.1, 15 ],
-		[ -12, -1.3, -28 ], [ 15, -1.2, -25 ], [ -25, -1.5, 12 ], [ 30, -1.0, -10 ],
-		[ -8, -1.3, 25 ], [ 10, -1.2, 28 ],
+		[ -18, -1.5, -22 ], [ 22, -1.5, -18 ], [ -20, -1.5, 20 ], [ 25, -1.5, 15 ],
+		[ -12, -1.5, -28 ], [ 15, -1.5, -25 ], [ -25, -1.5, 12 ], [ 30, -1.5, -10 ],
+		[ -8, -1.5, 25 ], [ 10, -1.5, 28 ],
 	];
 	for ( let i = 0; i < logPositions.length; i++ ) {
 		const pos = logPositions[ i ];
@@ -315,7 +315,7 @@ export function createNatureDetails( scene, options = {} ) {
 	for ( let i = 0; i < 12; i++ ) {
 		const angle = Math.random() * Math.PI * 2;
 		const dist = 10 + Math.random() * 20;
-		flowerPositions.push( [ Math.cos( angle ) * dist, -1.3, Math.sin( angle ) * dist ] );
+		flowerPositions.push( [ Math.cos( angle ) * dist, -1.5, Math.sin( angle ) * dist ] );
 	}
 	for ( const pos of flowerPositions ) {
 		// Each patch has 3-6 flowers
@@ -334,14 +334,14 @@ export function createNatureDetails( scene, options = {} ) {
 
 	// ── Ground vines ───────────────────────────────────────────────
 	const vinePairs = [
-		[ [ -15, -1.3, -20 ], [ -10, -1.3, -25 ] ],
-		[ [ 20, -1.2, -15 ], [ 25, -1.2, -20 ] ],
-		[ [ -20, -1.4, 15 ], [ -15, -1.4, 20 ] ],
-		[ [ 10, -1.2, 20 ], [ 15, -1.2, 25 ] ],
-		[ [ -5, -1.3, -28 ], [ 0, -1.3, -30 ] ],
-		[ [ 28, -1.1, -5 ], [ 30, -1.1, 0 ] ],
-		[ [ -28, -1.4, 5 ], [ -30, -1.4, 10 ] ],
-		[ [ 5, -1.2, 28 ], [ 10, -1.2, 30 ] ],
+		[ [ -15, -1.65, -20 ], [ -10, -1.65, -25 ] ],
+		[ [ 20, -1.65, -15 ], [ 25, -1.65, -20 ] ],
+		[ [ -20, -1.65, 15 ], [ -15, -1.65, 20 ] ],
+		[ [ 10, -1.65, 20 ], [ 15, -1.65, 25 ] ],
+		[ [ -5, -1.65, -28 ], [ 0, -1.65, -30 ] ],
+		[ [ 28, -1.65, -5 ], [ 30, -1.65, 0 ] ],
+		[ [ -28, -1.65, 5 ], [ -30, -1.65, 10 ] ],
+		[ [ 5, -1.65, 28 ], [ 10, -1.65, 30 ] ],
 	];
 	for ( let i = 0; i < vinePairs.length; i++ ) {
 		const pair = vinePairs[ i ];
@@ -357,7 +357,7 @@ export function createNatureDetails( scene, options = {} ) {
 		const dist = 8 + Math.random() * 25;
 		const pos = new Vector3(
 			Math.cos( angle ) * dist,
-			-1.3,
+			-1.4,
 			Math.sin( angle ) * dist
 		);
 		const radius = 0.5 + Math.random() * 1.5;

@@ -216,7 +216,7 @@ export function createOvergrowth( scene ) {
 		const dist = 12 + Math.random() * 28;
 		rock.position.set(
 			Math.cos( angle ) * dist,
-			-1 + radius * 0.3,
+			-1.5 + radius * 0.3,
 			Math.sin( angle ) * dist
 		);
 		rock.rotation.set( Math.random() * Math.PI, Math.random() * Math.PI, 0 );
@@ -232,7 +232,7 @@ export function createOvergrowth( scene ) {
 		const dist = 8 + Math.random() * 22;
 		mushroom.position.set(
 			Math.cos( angle ) * dist,
-			-1,
+			-1.5,
 			Math.sin( angle ) * dist
 		);
 		mushroom.rotation.y = Math.random() * Math.PI * 2;
@@ -249,7 +249,7 @@ export function createOvergrowth( scene ) {
 		const dist = 6 + Math.random() * 18;
 		stem.position.set(
 			Math.cos( angle ) * dist,
-			-0.7,
+			-1.5,
 			Math.sin( angle ) * dist
 		);
 
