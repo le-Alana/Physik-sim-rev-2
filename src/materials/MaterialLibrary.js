@@ -8,13 +8,24 @@
  * @dependency ./PBRMaterialBuilder — createPBRMaterial
  * @dependency ../shaders/WearNode — createWearNode
  * @dependency ../shaders/OvergrowthNode — createOvergrowthNode
- * @dependency three/tsl — vec3
+ * @dependency ../shaders/GrassTextureNode — createGrassTextureNode
+ * @dependency ../shaders/LeafTextureNode — createLeafTextureNode
+ * @dependency ../shaders/GroundTextureNode — createGroundTextureNode
+ * @dependency ../shaders/BarkTextureNode — createBarkTextureNode
+ * @dependency ../shaders/NormalPerturbationNode — createNormalPerturbationNode
+ * @dependency three/tsl — vec3, Fn, uv, float
  */
 
 import { createPBRMaterial } from './PBRMaterialBuilder.js';
 import { createWearNode } from '../shaders/WearNode.js';
 import { createOvergrowthNode } from '../shaders/OvergrowthNode.js';
-import { vec3 } from 'three/tsl';
+import { createGrassTextureNode } from '../shaders/GrassTextureNode.js';
+import { createLeafTextureNode } from '../shaders/LeafTextureNode.js';
+import { createGroundTextureNode } from '../shaders/GroundTextureNode.js';
+import { createBarkTextureNode } from '../shaders/BarkTextureNode.js';
+import { createNormalPerturbationNode } from '../shaders/NormalPerturbationNode.js';
+import { vec3, Fn, uv, float } from 'three/tsl';
+import { MeshPhysicalNodeMaterial } from 'three/webgpu';
 
 /**
  * Singleton material library — caches materials by name.
@@ -165,6 +176,132 @@ class MaterialLibrary {
 				clearcoat: 0.5,
 			} );
 		} );
+	}
+
+	/**
+	 * Grass blade material — uses GrassTextureNode for realistic blade pattern.
+	 * Opaque, non-metallic, high roughness.
+	 * @returns {MeshPhysicalNodeMaterial}
+	 */
+	getGrassMaterial() {
+		return this._getOrCreate( 'grass', () => {
+			const grassTex = createGrassTextureNode();
+			const mat = new MeshPhysicalNodeMaterial();
+			mat.name = 'Grass';
+			mat.roughness = 0.7;
+			mat.metalness = 0.0;
+
+			const colorFn = Fn( () => {
+				return grassTex( uv(), float( 0.5 ) );
+			} );
+			mat.colorNode = colorFn();
+
+			// Add normal perturbation for micro-detail
+			const normalPerturb = createNormalPerturbationNode( { strength: 0.03, frequency: 12 } );
+			const perturbedNormal = normalPerturb( null, null );
+			mat.normalNode = perturbedNormal;
+
+			return mat;
+		} );
+	}
+
+	/**
+	 * Leaf material — uses LeafTextureNode for vein pattern.
+	 * Slightly rough, non-metallic, with subtle translucency.
+	 * @returns {MeshPhysicalNodeMaterial}
+	 */
+	getLeafMaterial() {
+		return this._getOrCreate( 'leaf', () => {
+			const leafTex = createLeafTextureNode();
+			const mat = new MeshPhysicalNodeMaterial();
+			mat.name = 'Leaf';
+			mat.roughness = 0.6;
+			mat.metalness = 0.0;
+			mat.clearcoat = 0.1;
+
+			const colorFn = Fn( () => {
+				return leafTex( uv(), float( 0.5 ) );
+			} );
+			mat.colorNode = colorFn();
+
+			return mat;
+		} );
+	}
+
+	/**
+	 * Ground/dirt material — uses GroundTextureNode for soil pattern.
+	 * Very rough, non-metallic.
+	 * @returns {MeshPhysicalNodeMaterial}
+	 */
+	getGroundMaterial() {
+		return this._getOrCreate( 'ground', () => {
+			const groundTex = createGroundTextureNode();
+			const mat = new MeshPhysicalNodeMaterial();
+			mat.name = 'Ground';
+			mat.roughness = 1.0;
+			mat.metalness = 0.0;
+
+			const colorFn = Fn( () => {
+				return groundTex( uv(), vec3( 0 ) );
+			} );
+			mat.colorNode = colorFn();
+
+			return mat;
+		} );
+	}
+
+	/**
+	 * Bark material — uses BarkTextureNode for tree trunk pattern.
+	 * Rough, non-metallic.
+	 * @returns {MeshPhysicalNodeMaterial}
+	 */
+	getBarkMaterial() {
+		return this._getOrCreate( 'bark', () => {
+			const barkTex = createBarkTextureNode();
+			const mat = new MeshPhysicalNodeMaterial();
+			mat.name = 'Bark';
+			mat.roughness = 0.85;
+			mat.metalness = 0.0;
+
+			const colorFn = Fn( () => {
+				return barkTex( uv(), float( 0.5 ) );
+			} );
+			mat.colorNode = colorFn();
+
+			return mat;
+		} );
+	}
+
+	/**
+	 * Root material — dark brown, very rough, no wear.
+	 * @returns {MeshPhysicalNodeMaterial}
+	 */
+	getRootMaterial() {
+		return this._getOrCreate( 'root', () => {
+			const mat = new MeshPhysicalNodeMaterial();
+			mat.name = 'Root';
+			mat.color.setHex( 0x443322 );
+			mat.roughness = 1.0;
+			mat.metalness = 0.0;
+			return mat;
+		} );
+	}
+
+	/**
+	 * Flower petal material — colored, slightly rough, non-metallic.
+	 * @param {number} r — Red component (0-1).
+	 * @param {number} g — Green component (0-1).
+	 * @param {number} b — Blue component (0-1).
+	 * @returns {MeshPhysicalNodeMaterial}
+	 */
+	getFlowerPetalMaterial( r, g, b ) {
+		// Not cached — colors vary per flower
+		const mat = new MeshPhysicalNodeMaterial();
+		mat.name = `FlowerPetal_${r}_${g}_${b}`;
+		mat.color.setRGB( r, g, b );
+		mat.roughness = 0.4;
+		mat.metalness = 0.0;
+		return mat;
 	}
 }
 

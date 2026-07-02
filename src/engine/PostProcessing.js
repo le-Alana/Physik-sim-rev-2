@@ -1,25 +1,27 @@
 /**
- * @file PostProcessing — SSR + GTAO + Bloom + Lensflare + Tone Mapping pipeline
+ * @file PostProcessing — SSR + GTAO + Bloom + Tone Mapping pipeline
  *
  * Builds a post-processing pipeline using Three.js's PassNode system.
- * Chain: Scene Pass → GTAO → SSR → Bloom → Lensflare → Tone Mapping
+ * Chain: Scene Pass → GTAO → SSR → Bloom → Tone Mapping
  *
- * This uses the TSL-based post-processing nodes from three/addons.
+ * Uses the TSL-based post-processing nodes from three/addons.
  * Each effect can be toggled for performance on mobile.
  *
- * @dependency three/tsl — pass, mrt, output, normalView
+ * SSR is configured with proper roughness/metalness inputs for
+ * realistic reflections on the dance floor and metallic objects.
+ *
+ * @dependency three/tsl — pass, mrt, output, normalView, roughness, metalness
  * @dependency three/addons/tsl/display/SSRNode — ssr
  * @dependency three/addons/tsl/display/BloomNode — bloom
  * @dependency three/addons/tsl/display/GTAONode — ao
- * @dependency three/addons/tsl/display/LensflareNode — lensflare
  */
 
-import { output, normalView, mrt, vec4 } from 'three/tsl';
+import { output, normalView, mrt, roughness, metalness } from 'three/tsl';
 import { PassNode } from 'three/webgpu';
 import { HalfFloatType } from 'three';
-import SSRNode from 'three/addons/tsl/display/SSRNode.js';
-import BloomNode from 'three/addons/tsl/display/BloomNode.js';
-import GTAONode from 'three/addons/tsl/display/GTAONode.js';
+import { ssr } from 'three/addons/tsl/display/SSRNode.js';
+import { bloom } from 'three/addons/tsl/display/BloomNode.js';
+import { ao } from 'three/addons/tsl/display/GTAONode.js';
 
 /**
  * Builds the post-processing pipeline and hooks it into the renderer.
@@ -60,31 +62,46 @@ export function createPostProcessing( renderer, scene, camera, options = {} ) {
 
 	// ── Ground Truth Ambient Occlusion ─────────────────────────────
 	if ( enableAO ) {
-		const aoNode = new GTAONode( depthNode, normalNode, camera );
-		const aoFactor = aoNode.getTextureNode();
-		// Multiply scene colour by AO factor
-		finalNode = finalNode.mul( vec4( aoFactor, aoFactor, aoFactor, 1.0 ) );
+		try {
+			const aoNode = ao( depthNode, normalNode, camera );
+			const aoFactor = aoNode.getTextureNode();
+			// Multiply scene colour by AO factor
+			finalNode = finalNode.mul( aoFactor );
+		} catch ( err ) {
+			console.warn( '[PostProcessing] GTAO setup failed:', err.message );
+		}
 	}
 
 	// ── Screen Space Reflections ───────────────────────────────────
 	if ( enableSSR ) {
-		const ssrNode = new SSRNode( finalNode, depthNode, normalNode, {
-			camera: camera,
-			reflectNonMetals: true,
-			stochastic: true,
-			binaryRefine: true,
-		} );
-		finalNode = ssrNode.getTextureNode();
+		try {
+			// Use the ssr TSL function with proper roughness/metalness inputs
+			const ssrNode = ssr( finalNode, depthNode, normalNode, {
+				camera: camera,
+				stochastic: true,
+				binaryRefine: true,
+				reflectNonMetals: true,
+				roughnessNode: roughness,
+				metalnessNode: metalness,
+			} );
+			finalNode = ssrNode;
+		} catch ( err ) {
+			console.warn( '[PostProcessing] SSR setup failed:', err.message );
+		}
 	}
 
 	// ── Bloom ──────────────────────────────────────────────────────
 	if ( enableBloom ) {
-		const bloomNode = new BloomNode( finalNode, {
-			strength: 0.4,
-			radius: 0.5,
-			threshold: 0.6,
-		} );
-		finalNode = finalNode.add( bloomNode.getTextureNode() );
+		try {
+			const bloomNode = bloom( finalNode, {
+				strength: 0.4,
+				radius: 0.5,
+				threshold: 0.6,
+			} );
+			finalNode = finalNode.add( bloomNode );
+		} catch ( err ) {
+			console.warn( '[PostProcessing] Bloom setup failed:', err.message );
+		}
 	}
 
 	// Set the renderer's output to our post-processed result
