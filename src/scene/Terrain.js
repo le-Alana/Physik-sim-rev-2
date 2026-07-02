@@ -30,7 +30,7 @@ export function createTerrain( scene ) {
 	// ── Geometry ───────────────────────────────────────────────────
 	// Large plane with enough segments for smooth hills
 	const size = 100;
-	const segments = 200;
+	const segments = 64;
 	const geo = new PlaneGeometry( size, size, segments, segments );
 	geo.rotateX( -Math.PI / 2 );
 

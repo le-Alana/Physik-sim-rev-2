@@ -129,7 +129,7 @@ export default class Cubey {
 		const geo = createRoundedBox( 1.2, 1.2, 1.2, 0.2, 3 );
 		const mat = materialLib.getCubeyMaterial();
 		this.mesh = new Mesh( geo, mat );
-		this.mesh.position.set( 0, 0.5, 0 );
+		this.mesh.position.set( 0, 0.02, 0 );
 		this.mesh.name = 'Cubey';
 		this.mesh.castShadow = true;
 		this.mesh.receiveShadow = true;
@@ -203,18 +203,6 @@ export default class Cubey {
 		// Clamp to boundary
 		this.mesh.position.x = Math.max( -BOUNDARY, Math.min( BOUNDARY, this.mesh.position.x ) );
 		this.mesh.position.z = Math.max( -BOUNDARY, Math.min( BOUNDARY, this.mesh.position.z ) );
-
-		// Gentle rotation while moving
-		if ( dx !== 0 || dz !== 0 ) {
-			this.mesh.rotation.y += dt * 2 * ( dx || dz );
-			// Slight tilt
-			this.mesh.rotation.x += dt * dz * 0.5;
-			this.mesh.rotation.z -= dt * dx * 0.5;
-		}
-
-		// Damping for rotation
-		this.mesh.rotation.x *= 0.95;
-		this.mesh.rotation.z *= 0.95;
 
 		// Subtle squash/stretch on movement
 		const speed = Math.sqrt(
