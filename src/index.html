@@ -124,8 +124,8 @@
 		</div>
 
 		<div class="slider-group">
-			<div class="slider-label"><span>Friction</span><span class="slider-value" id="val-friction">0.00</span></div>
-			<input type="range" id="friction" min="0" max="1" step="0.01" value="0">
+			<div class="slider-label"><span>Friction</span><span class="slider-value" id="val-friction">0 %</span></div>
+			<input type="range" id="friction" min="0" max="100" step="1" value="0">
 		</div>
 
 		<div class="slider-group">
@@ -215,7 +215,7 @@
 		document.getElementById( 'friction' ).addEventListener( 'input', ( e ) => {
 			const v = parseFloat( e.target.value );
 			physicsConfig.friction = v;
-			document.getElementById( 'val-friction' ).textContent = v.toFixed( 2 );
+			document.getElementById( 'val-friction' ).textContent = `${ v.toFixed( 0 ) } %`;
 		});
 
 		// Weight sliders

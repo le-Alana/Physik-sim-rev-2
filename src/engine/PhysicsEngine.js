@@ -120,9 +120,9 @@ export default class PhysicsEngine {
 	 * @param {number} dt — seconds since last step
 	 */
 		updatePhysics( dt ) {
-			// Apply friction as velocity multiplier (0 = no friction, 1 = full stop)
+			// Apply friction as velocity multiplier (slider 0-100%, 10× less effective)
 			for ( const [ name, cube ] of Object.entries( cubes ) ) {
-				const frictionMultiplier = Math.max( 0, 1.0 - physicsConfig.friction );
+				const frictionMultiplier = Math.max( 0, 1.0 - physicsConfig.friction / 1000 );
 				cube.velocity.multiplyScalar( frictionMultiplier );
 			}
 
