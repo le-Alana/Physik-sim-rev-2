@@ -26,9 +26,9 @@
     "three": "0.185.1"
   },
   "devDependencies": {
-    "eslint": "10.6.0",
+    "eslint": "10.7.0",
     "globals": "^17.7.0",
-    "prettier": "3.9.4",
+    "prettier": "3.9.5",
     "serve": "^14.2.6"
   },
   "engines": {
