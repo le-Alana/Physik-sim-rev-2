@@ -1,77 +1,134 @@
 /**
- * @file Ground — Reflective dancing floor
+ * @file Ground — Reflective dancing floor with running lights
  *
- * A large reflective plane that acts as a dance floor.
- * Features:
+ * Creates the dance floor that sits ON the terrain:
+ *   - Grid of individual floor plates with gaps
+ *   - Animated running lights between plates (emissive strips)
  *   - Reflective surface using ReflectorNode
- *   - Animated checkerboard pattern
  *   - PBR material with wear scratches
+ *   - Edge transition blending into terrain
  *
- * @dependency three — PlaneGeometry, Mesh
- * @dependency three/tsl — ReflectorNode, Fn, vec2, vec3, uv, time, sin, floor, mix
+ * @dependency three — PlaneGeometry, BoxGeometry, Mesh, Group
+ * @dependency three/tsl — Fn, vec2, vec3, uv, time, sin, floor, mix, ReflectorNode
  * @dependency ../materials/MaterialLibrary — default
  */
 
-import { PlaneGeometry, Mesh } from 'three';
-import { Fn, vec2, vec3, uv, time, sin, floor, mix } from 'three/tsl';
-import { ReflectorNode } from 'three/webgpu';
+import { PlaneGeometry, BoxGeometry, Mesh, Group, AdditiveBlending } from 'three';
+import { MeshPhysicalNodeMaterial, ReflectorNode } from 'three/webgpu';
+import { Fn, vec2, vec3, uv, time, sin, floor, mix, float } from 'three/tsl';
 import materialLib from '../materials/MaterialLibrary.js';
 
 /**
- * Creates the reflective dance floor.
+ * Creates the reflective dance floor with running lights.
  * @param {import('three').Scene} scene
  */
 export function createGround( scene ) {
 
+	const group = new Group();
+	group.name = 'DanceFloor';
+
 	const baseMat = materialLib.getDanceFloorMaterial();
 
-	// ── Animated checkerboard pattern using TSL ─────────────────────
-	const checkerFn = Fn( () => {
+	// ── Floor plate grid ──────────────────────────────────────────
+	// Create individual plates with gaps for running lights
+	const plateCount = 10; // 10x10 grid
+	const plateSize = 2.5;
+	const gapSize = 0.15;
+	const totalSize = plateCount * plateSize + ( plateCount - 1 ) * gapSize;
+	const halfTotal = totalSize / 2;
 
-		const scale = 4;
-		const cUv = uv().mul( scale );
-		const grid = floor( cUv.x ).add( floor( cUv.y ) );
-		const pattern = grid.mod( 2 ).abs();
+	for ( let ix = 0; ix < plateCount; ix++ ) {
+		for ( let iz = 0; iz < plateCount; iz++ ) {
+			const plateGeo = new BoxGeometry( plateSize, 0.1, plateSize );
+			const plate = new Mesh( plateGeo, baseMat.clone() );
+			plate.position.set(
+				ix * ( plateSize + gapSize ) - halfTotal + plateSize / 2,
+				-0.5, // sits on terrain
+				iz * ( plateSize + gapSize ) - halfTotal + plateSize / 2
+			);
+			plate.name = `FloorPlate_${ix}_${iz}`;
+			plate.receiveShadow = true;
+			plate.castShadow = true;
+			group.add( plate );
+		}
+	}
 
-		// Animate with slow colour pulse
-		const pulse = sin( time.mul( 0.3 ) ).mul( 0.1 ).add( 0.9 );
-		const colorA = vec3( 0.4, 0.6, 1.0 ).mul( pulse );
-		const colorB = vec3( 0.2, 0.3, 0.6 ).mul( pulse );
+	// ── Running lights between plates ─────────────────────────────
+	// Emissive strips that animate around the grid
+	const lightMat = new MeshPhysicalNodeMaterial();
+	lightMat.name = 'RunningLight';
+	lightMat.roughness = 0.1;
+	lightMat.metalness = 0.0;
+	lightMat.emissiveIntensity = 2.0;
 
-		return mix( colorA, colorB, pattern );
+	// Animated emissive color for running lights
+	const lightColorFn = Fn( () => {
+		// Create a traveling wave pattern
+		// uv() must be called as a function — it returns the UV node
+		const u = uv();
+		const wave = sin( time.mul( 2 ).sub( u.x.mul( 10 ) ).sub( u.y.mul( 10 ) ) ).mul( 0.5 ).add( 0.5 );
+		const color = vec3( 0.2, 0.5, 1.0 ).mul( wave );
+		return color;
+	} );
+	lightMat.emissiveNode = lightColorFn();
 
+	// Horizontal light strips (between rows)
+	for ( let i = 0; i < plateCount - 1; i++ ) {
+		const stripGeo = new PlaneGeometry( totalSize, gapSize * 0.5 );
+		const strip = new Mesh( stripGeo, lightMat );
+		strip.position.set(
+			0,
+			-0.45,
+			i * ( plateSize + gapSize ) - halfTotal + plateSize + gapSize / 2
+		);
+		strip.rotation.x = -Math.PI / 2;
+		strip.name = `LightStrip_H_${i}`;
+		group.add( strip );
+	}
+
+	// Vertical light strips (between columns)
+	for ( let i = 0; i < plateCount - 1; i++ ) {
+		const stripGeo = new PlaneGeometry( gapSize * 0.5, totalSize );
+		const strip = new Mesh( stripGeo, lightMat );
+		strip.position.set(
+			i * ( plateSize + gapSize ) - halfTotal + plateSize + gapSize / 2,
+			-0.45,
+			0
+		);
+		strip.rotation.x = -Math.PI / 2;
+		strip.name = `LightStrip_V_${i}`;
+		group.add( strip );
+	}
+
+	// ── Reflective overlay ────────────────────────────────────────
+	// Use ReflectorNode for mirror-like reflections
+	const reflector = new ReflectorNode( {
+		resolutionScale: 0.5,
+		generateMipmaps: true,
 	} );
 
-	// Blend checkerboard with the base PBR colour without creating a self-reference.
-	const baseColorNode = baseMat.colorNode;
-	const groundColor = Fn( () => {
-		const checker = checkerFn();
-		return mix( checker, baseColorNode, 0.3 );
+	// Create a single reflective plane over the entire floor
+	const reflectorMat = new MeshPhysicalNodeMaterial();
+	reflectorMat.name = 'FloorReflector';
+	reflectorMat.transparent = true;
+	reflectorMat.opacity = 0.3;
+
+	// Mix reflection with floor color
+	const reflectColorFn = Fn( () => {
+		const reflection = reflector;
+		const floorColor = vec3( 0.3, 0.5, 0.8 );
+		return mix( floorColor, reflection, float( 0.5 ) );
 	} );
-	const groundColorNode = groundColor();
+	reflectorMat.colorNode = reflectColorFn();
 
-	baseMat.colorNode = groundColorNode;
-
-	// ── Geometry ───────────────────────────────────────────────────
-	const geo = new PlaneGeometry( 60, 60 );
-	const ground = new Mesh( geo, baseMat );
-	ground.rotation.x = -Math.PI / 2;
-	ground.position.y = -1;
-	ground.name = 'DanceFloor';
-	ground.receiveShadow = true;
-
-	scene.add( ground );
-
-	// ── Reflective plane overlay ────────────────────────────────────
-	// Use ReflectorNode for mirror-like reflections on the floor.
-	// Avoid connecting the reflector to the same node chain that already references itself.
-	const reflector = new ReflectorNode();
-	const reflectorMat = baseMat.clone();
-	reflectorMat.colorNode = mix( reflector, groundColorNode, 0.5 );
-
-	const reflectorMesh = new Mesh( geo, reflectorMat );
+	const reflectorGeo = new PlaneGeometry( totalSize + 1, totalSize + 1 );
+	const reflectorMesh = new Mesh( reflectorGeo, reflectorMat );
+	reflectorMesh.position.y = -0.4;
 	reflectorMesh.rotation.x = -Math.PI / 2;
-	reflectorMesh.position.y = -0.99; // slightly above the floor
 	reflectorMesh.name = 'FloorReflector';
-	scene.add( reflectorMesh );
+	group.add( reflectorMesh );
+
+	scene.add( group );
+
+	console.log( '[Ground] Created dance floor with running lights' );
 }

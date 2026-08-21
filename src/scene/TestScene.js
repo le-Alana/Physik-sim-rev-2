@@ -6,22 +6,26 @@
  *
  * Order matters:
  *   1. Environment (ambient + hemisphere lights, fog)
- *   2. Sky (gradient dome + sun)
- *   3. Clouds (drifting layers)
- *   4. Mountains (Rayman-style floating)
- *   5. Ground (reflective dance floor)
- *   6. Overgrowth (vine pillars, rocks, flora)
- *   7. Foliage (grass tufts, trees)
- *   8. Cubey (player cube)
- *   9. Shadows (directional lights)
- *   10. AnimatedLights (orbiting point lights)
+ *   2. Terrain (height-mapped ground below dance floor)
+ *   3. Sky (gradient dome + sun)
+ *   4. Clouds (volumetric clusters)
+ *   5. Mountains (Rayman-style floating, organic shapes)
+ *   6. Ground (reflective dance floor with running lights)
+ *   7. Overgrowth (organic pillars, faceted rocks, detailed mushrooms)
+ *   8. NatureDetails (hanging roots, fallen logs, flowers, vines, moss)
+ *   9. Foliage (blade grass, branched trees, shrubs)
+ *   10. Cubey (beveled player cube)
+ *   11. Shadows (directional lights)
+ *   12. AnimatedLights (orbiting point lights)
  *
  * @dependency ./Environment — createEnvironment
+ * @dependency ./Terrain — createTerrain
  * @dependency ./Sky — createSky
  * @dependency ./Clouds — createClouds
  * @dependency ./Mountains — createMountains
  * @dependency ./Ground — createGround
  * @dependency ./Overgrowth — createOvergrowth
+ * @dependency ./NatureDetails — createNatureDetails
  * @dependency ./Foliage — createFoliage
  * @dependency ./Cubey — Cubey (class)
  * @dependency ../effects/ShadowManager — createShadows
@@ -29,11 +33,13 @@
  */
 
 import { createEnvironment } from './Environment.js';
+import { createTerrain } from './Terrain.js';
 import { createSky } from './Sky.js';
 import { createClouds } from './Clouds.js';
 import { createMountains } from './Mountains.js';
 import { createGround } from './Ground.js';
 import { createOvergrowth } from './Overgrowth.js';
+import { createNatureDetails } from './NatureDetails.js';
 import { createFoliage } from './Foliage.js';
 import Cubey from './Cubey.js';
 import { createShadows } from '../effects/ShadowManager.js';
@@ -53,31 +59,37 @@ export function buildTestScene( scene, engine ) {
 	// 1. Environment lighting + fog
 	createEnvironment( scene );
 
-	// 2. Sky dome + sun
+	// 2. Terrain (height-mapped ground below dance floor)
+	createTerrain( scene );
+
+	// 3. Sky dome + sun
 	createSky( scene );
 
-	// 3. Drifting clouds
+	// 4. Volumetric cloud clusters
 	createClouds( scene );
 
-	// 4. Floating Rayman mountains
-	createMountains( scene );
+	// 5. Organic floating mountains (returns positions for root attachment)
+	const mountainPositions = createMountains( scene );
 
-	// 5. Reflective dance floor
+	// 6. Reflective dance floor with running lights (sits on terrain)
 	createGround( scene );
 
-	// 6. Overgrown details (pillars, rocks, glowing flora)
+	// 7. Overgrown details (organic pillars, faceted rocks, detailed mushrooms)
 	createOvergrowth( scene );
 
-	// 7. Foliage (grass, trees)
+	// 8. Nature details (roots, fallen logs, flowers, vines, moss)
+	createNatureDetails( scene, { mountainPositions } );
+
+	// 9. Foliage (blade grass, branched trees, shrubs) — opaque, textured
 	createFoliage( scene );
 
-	// 8. Player cube
+	// 10. Player cube (beveled/rounded)
 	const cubey = new Cubey( scene );
 
-	// 9. Shadow-casting lights
+	// 11. Shadow-casting lights
 	createShadows( scene, { shadowMapSize: engine.shadowMapSize } );
 
-	// 10. Animated orbiting lights
+	// 12. Animated orbiting lights
 	const animatedLights = new AnimatedLights( scene );
 
 	console.log( '[TestScene] Scene build complete.' );
