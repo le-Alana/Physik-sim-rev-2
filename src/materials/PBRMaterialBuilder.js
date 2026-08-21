@@ -17,8 +17,9 @@
  */
 
 import { MeshPhysicalNodeMaterial } from 'three/webgpu';
-import { float, vec3, mix, uv, positionWorld } from 'three/tsl';
+import { float, vec3, mix, uv, positionWorld, normalLocal } from 'three/tsl';
 import { Color } from 'three';
+import { createNormalPerturbationNode } from '../shaders/NormalPerturbationNode.js';
 
 /**
  * Builds a MeshPhysicalNodeMaterial with optional procedural layers.
@@ -100,6 +101,15 @@ export function createPBRMaterial( config ) {
 		const wearFactor = wearNode( uv() );
 		material.roughnessNode = float( roughness ).add( wearFactor.mul( 0.3 ) );
 	}
+
+	// ── Normal perturbation for micro-detail ────────────────────────
+	// Adds subtle high-frequency noise to normals for realistic surface detail.
+	// Strength is lower for smooth surfaces (metals, clearcoat) and higher for rough ones.
+	const normalPerturb = createNormalPerturbationNode( {
+		strength: roughness > 0.5 ? 0.04 : 0.02,
+		frequency: 10,
+	} );
+	material.normalNode = normalPerturb( normalLocal, positionWorld );
 
 	return material;
 }
