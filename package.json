@@ -20,8 +20,8 @@
     "volumetric-clouds",
     "post-processing"
   ],
-  "author": "",
-  "license": "MIT",
+  "author": "le-Alana",
+  "license": "Apache v2",
   "dependencies": {
     "three": "0.186.1"
   },
